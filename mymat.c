@@ -26,7 +26,7 @@ void print_mat(mat* matrix)
     {
         for(j = 0; j < LENGTH_OF_MATRIX_LINE ; j++)
         {
-            printf("%.2f ", matrix->data[i][j]);
+            printf("%.2f \t\t", matrix->data[i][j]);
         }
         printf("\n");
     }
