@@ -11,6 +11,8 @@ typedef struct {
     mat* matrix;
 } MatrixMap;
 
+void handleReadMat(MatrixMap* matrixMap, int size);
+
 int main()
 {
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
@@ -41,57 +43,7 @@ int main()
 
         if(strcmp(command, "read_mat") == 0)
         {
-            // read_mat <matrix> <16 numbers>
-            /*
-            Initialize all needed variables:
-            matrixName is the name of the matrix
-            matrix is the pointer to the matrix
-            numList is the list of numbers
-            allNumbersAreValid is a flag that indicates if all the numbers are valid
-            */
-            char matrixName[6];
-            mat *matrix = NULL;
-            float numList[16];
-            int allNumbersAreValid = 1;
-            scanf("%s", matrixName);
-
-            // get all the numbers
-            for(i = 0; i < 16; i++)
-            {
-                // If the user entered a non-number argument, print "Argument is not a real number" and break
-                if(scanf("%f", &numList[i]) != 1)
-                {
-                    // make sure the flag is 0
-                    allNumbersAreValid = 0;
-                    printf("Argument is not a real number\n");
-                    break;
-                }
-            }
-
-            // not executing the rest of the code if the flag is 0
-            if(allNumbersAreValid)
-            {
-                // find the matrix in the lookup table
-                for(i = 0; i < 6; i++)
-                {
-                    if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
-                    {
-                        matrix = matrixMap[i].matrix;
-                        break;
-                    }
-                }
-
-                // call read_mat(mat*, float[16]) if the matrix is found in the lookup table
-                if(matrix != NULL)
-                {
-                    read_mat(matrix, numList);
-                }
-                else
-                {
-                    // print "Undefined matrix name" if the matrix is not found in the lookup table
-                    printf("Undefined matrix name\n");
-                }
-            }
+            handleReadMat(matrixMap, 6);
         }
         else if(strcmp(command, "print_mat") == 0)
         {
@@ -366,5 +318,60 @@ int main()
 
     return 0;
 }
+
+void handleReadMat(MatrixMap* matrixMap, int size)
+{
+    // read_mat <matrix> <16 numbers>
+    /*
+    Initialize all needed variables:
+    matrixName is the name of the matrix
+    matrix is the pointer to the matrix
+    numList is the list of numbers
+    allNumbersAreValid is a flag that indicates if all the numbers are valid
+    */
+    float numList[16] = {0};
+    char matrixName[6];
+    mat *matrix = NULL;
+    int i;
+
+    // get the matrix name
+    scanf("%s", matrixName);
+
+    // Find the matrix in the lookup table
+    for(i = 0; i < size; i++)
+    {
+        if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
+        {
+            matrix = matrixMap[i].matrix;
+            break;
+        }
+    }
+    
+    // If the matrix was not found, print an error and return
+    if(matrix == NULL)
+    {
+        printf("Undefined matrix name\n");
+
+        // skip the rest of the line
+        char c;
+        while((c = getchar()) != '\n' && c != EOF);
+        
+        return;
+    }
+
+    // get all the numbers
+    for(i = 0; i < 16; i++)
+    {
+        if(scanf("%f", &numList[i]) != 1)
+        {
+            printf("Argument is not a real number\n");
+            return;
+        }
+    }
+
+    // call read_mat(mat*, float[16])
+    read_mat(matrix, numList);
+}
+
 
 //gcc mainmat.c mymat.c -o mainmat
