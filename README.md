@@ -26,3 +26,4 @@ To use the matrix calculator, compile the program using the provided makefile:
 
 ```bash
 make mainmat
+gcc mainmat.c mymat.c -o mainmat
