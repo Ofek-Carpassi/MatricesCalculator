@@ -1,4 +1,4 @@
-# MatricesCalculator# Matrix Calculator
+# Matrices Calculator
 
 This repository contains a simple matrix calculator implemented in C. The calculator supports basic matrix operations such as addition, subtraction, multiplication, scalar multiplication, and transposition.
 
@@ -26,3 +26,4 @@ To use the matrix calculator, compile the program using the provided makefile:
 
 ```bash
 make mainmat
+gcc mainmat.c mymat.c -o mainmat
