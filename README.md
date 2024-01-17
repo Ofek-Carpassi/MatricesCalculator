@@ -1,4 +1,4 @@
-# MatricesCalculator# Matrix Calculator
+# MatricesCalculator
 
 This repository contains a simple matrix calculator implemented in C. The calculator supports basic matrix operations such as addition, subtraction, multiplication, scalar multiplication, and transposition.
 
