@@ -18,6 +18,7 @@ void handleSubMat(MatrixMap* matrixMap, int size);
 void handleMulMat(MatrixMap* matrixMap, int size);
 void handleMulScalar(MatrixMap* matrixMap, int size);
 void handleTransMat(MatrixMap* matrixMap, int size);
+void handleInputs(char* command);
 
 int main()
 {
@@ -93,6 +94,34 @@ int main()
     return 0;
 }
 
+char* handleInputs(char* command)
+{
+    if(strcmp(command, "read_mat"))
+    {
+        int c;
+        int i;
+        char mat[6];
+        int numbers[16]
+        while((c = getchar()) != '\n', i < 17)
+        {
+            if(i < 6)
+            {
+                mat[i] = c;
+            }
+            else
+            {
+                numbers[i - 6] = c;
+            }
+        }
+    }
+    int c;
+    while((c = getchar()) != '\n')
+    {
+        
+    
+    }
+}
+
 void handleReadMat(MatrixMap* matrixMap, int size)
 {
     // read_mat <matrix> <16 numbers>
@@ -107,9 +136,7 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     char matrixName[6];
     mat *matrix = NULL;
     int i;
-
-    // get the matrix name
-    scanf("%s", matrixName);
+    char c;
 
     // Find the matrix in the lookup table
     for(i = 0; i < size; i++)
@@ -126,8 +153,6 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     {
         printf("Undefined matrix name\n");
 
-        // skip the rest of the line
-        char c;
         while((c = getchar()) != '\n' && c != EOF);
         
         return;
@@ -139,9 +164,9 @@ void handleReadMat(MatrixMap* matrixMap, int size)
         if(scanf("%f", &numList[i]) != 1)
         {
             printf("Argument is not a real number\n");
-            // clear the buffer
-            char c;
+        
             while((c = getchar()) != '\n' && c != EOF);
+
             return;
         }
     }
