@@ -20,8 +20,7 @@ void handleSubMat(MatrixMap* matrixMap, int size);
 void handleMulMat(MatrixMap* matrixMap, int size);
 void handleMulScalar(MatrixMap* matrixMap, int size);
 void handleTransMat(MatrixMap* matrixMap, int size);
-/* void handleInputs(char* command);
- */
+
 int main()
 {
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
