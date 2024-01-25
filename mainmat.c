@@ -1,9 +1,11 @@
 // A calculator for matrices.
 // The main function, all the intercation with the user and the command analysis.
+// Input: <command> <arg1>, <arg2>, <arg3> (all the arguments are separated by commas and spaces)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "mymat.h"
 
 typedef struct {
@@ -18,8 +20,8 @@ void handleSubMat(MatrixMap* matrixMap, int size);
 void handleMulMat(MatrixMap* matrixMap, int size);
 void handleMulScalar(MatrixMap* matrixMap, int size);
 void handleTransMat(MatrixMap* matrixMap, int size);
-void handleInputs(char* command);
-
+/* void handleInputs(char* command);
+ */
 int main()
 {
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
@@ -94,34 +96,6 @@ int main()
     return 0;
 }
 
-char* handleInputs(char* command)
-{
-    if(strcmp(command, "read_mat"))
-    {
-        int c;
-        int i;
-        char mat[6];
-        int numbers[16]
-        while((c = getchar()) != '\n', i < 17)
-        {
-            if(i < 6)
-            {
-                mat[i] = c;
-            }
-            else
-            {
-                numbers[i - 6] = c;
-            }
-        }
-    }
-    int c;
-    while((c = getchar()) != '\n')
-    {
-        
-    
-    }
-}
-
 void handleReadMat(MatrixMap* matrixMap, int size)
 {
     // read_mat <matrix> <16 numbers>
@@ -137,6 +111,9 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     mat *matrix = NULL;
     int i;
     char c;
+
+    // get the matrix (every matrix name is mat_{A-F})
+    scanf("%s", matrixName);
 
     // Find the matrix in the lookup table
     for(i = 0; i < size; i++)
@@ -161,7 +138,14 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     // get all the numbers
     for(i = 0; i < 16; i++)
     {
-        if(scanf("%f", &numList[i]) != 1)
+        scanf("%f", &numList[i]);
+        if(numList[i] == '\n')
+        {
+            break;
+        }
+        
+        // make sure the number is a real number
+        if(isdigit(numList[i]) == 1)
         {
             printf("Argument is not a real number\n");
         
