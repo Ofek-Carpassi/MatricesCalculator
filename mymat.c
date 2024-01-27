@@ -89,7 +89,7 @@ void mul_scalar(mat* matrix, float scalar, mat* resultMatrix)
 }
 
 // trans_mat - transpose a matrix
-void trans_mat(mat* matrix, mat* resultMatrix)
+void trans_mat(mat* matrix, mat* resultMatrix, mat* tempMatrix)
 {
     int i, j;
 
@@ -97,7 +97,15 @@ void trans_mat(mat* matrix, mat* resultMatrix)
     {
         for(j = 0; j < LENGTH_OF_MATRIX_LINE; j++)
         {
-            resultMatrix->data[i][j] = matrix->data[j][i];
+            tempMatrix->data[j][i] = matrix->data[i][j];
+        }
+    }
+
+    for(i = 0; i < LENGTH_OF_MATRIX_LINE; i++)
+    {
+        for(j = 0; j < LENGTH_OF_MATRIX_LINE; j++)
+        {
+            resultMatrix->data[i][j] = tempMatrix->data[i][j];
         }
     }
 }

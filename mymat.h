@@ -13,6 +13,6 @@ void add_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix);
 void sub_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix);
 void mul_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix);
 void mul_scalar(mat* matrix, float scalar, mat* resultMatrix);
-void trans_mat(mat* matrix, mat* resultMatrix);
+void trans_mat(mat* matrix, mat* resultMatrix, mat* tempMatrix);
 
 #endif

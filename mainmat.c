@@ -2,30 +2,53 @@
 // The main function, all the intercation with the user and the command analysis.
 // Input: <command> <arg1>, <arg2>, <arg3> (all the arguments are separated by commas and spaces)
 
+/*
+Importing all the needed libraries:
+stdio.h - for input and output
+string.h - for string manipulation
+ctype.h - for character manipulation
+mymat.h - for the matrix functions (mymat.h is a header file that I created)
+*/
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "mymat.h"
 
+// A struct that maps between a matrix name and a pointer to the matrix
 typedef struct {
     char* matrixName;
     mat* matrix;
 } MatrixMap;
 
-void handleReadMat(MatrixMap* matrixMap, int size);
-void handlePrintMat(MatrixMap* matrixMap, int size);
-void handleAddMat(MatrixMap* matrixMap, int size);
-void handleSubMat(MatrixMap* matrixMap, int size);
-void handleMulMat(MatrixMap* matrixMap, int size);
-void handleMulScalar(MatrixMap* matrixMap, int size);
-void handleTransMat(MatrixMap* matrixMap, int size);
+/*
+All handling commands functions - all the functions get a pointer to the lookup table:
+handleReadMat - handles the read_mat command
+handlePrintMat - handles the print_mat command
+handleAddMat - handles the add_mat command
+handleSubMat - handles the sub_mat command
+handleMulMat - handles the mul_mat command
+handleMulScalar - handles the mul_scalar command
+handleTransMat - handles the trans_mat command
+*/
+void handleReadMat(MatrixMap* matrixMap);
+void handlePrintMat(MatrixMap* matrixMap);
+void handleAddMat(MatrixMap* matrixMap);
+void handleSubMat(MatrixMap* matrixMap);
+void handleMulMat(MatrixMap* matrixMap);
+void handleMulScalar(MatrixMap* matrixMap);
+void handleTransMat(MatrixMap* matrixMap);
 
+// The size of the matrix name (mat_{A-F})
+#define SIZE_OF_MATRIX_NAME 6
+#define AMOUNT_OF_NUMBERS 16
+
+// The main function - initializes all the matrices to zero and gets the command from the user
 int main()
 {
+    // Create all the matrices using the "mat" struct created in mymat.h
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
-    int i;
 
+    // Create a lookup table for the matrices - using the MatrixMap struct
     MatrixMap matrixMap[] ={
         {"MAT_A", &MAT_A},
         {"MAT_B", &MAT_B},
@@ -35,8 +58,8 @@ int main()
         {"MAT_F", &MAT_F}
     };
 
-    // Intialize all matrices to zero using read_mat(mat*, float[16])
-    float numList[16] = {0};
+    // Intialize all matrices to zero using an array of 16 zeros and the read_mat function
+    float numList[AMOUNT_OF_NUMBERS] = {0};
     read_mat(&MAT_A, numList);
     read_mat(&MAT_B, numList);
     read_mat(&MAT_C, numList);
@@ -44,38 +67,39 @@ int main()
     read_mat(&MAT_E, numList);
     read_mat(&MAT_F, numList);
 
-    // Get the command from the user
+    // Get the command from the user and call the right function while the command is not "stop"
     do {
-        char command[11];
+        // A string that holds the command - 11 is the maximum length of a command ()
+        char command[9];
         scanf("%s", command);
 
         if(strcmp(command, "read_mat") == 0)
         {
-            handleReadMat(matrixMap, 6);
+            handleReadMat(matrixMap);
         }
         else if(strcmp(command, "print_mat") == 0)
         {
-            handlePrintMat(matrixMap, 6);
+            handlePrintMat(matrixMap);
         }
         else if(strcmp(command, "add_mat") == 0)
         {
-            handleAddMat(matrixMap, 6);
+            handleAddMat(matrixMap);
         }
         else if(strcmp(command, "sub_mat") == 0)
         {
-            handleSubMat(matrixMap, 6);
+            handleSubMat(matrixMap);
         }
         else if(strcmp(command, "mul_mat") == 0)
         {
-            handleMulMat(matrixMap, 6);
+            handleMulMat(matrixMap);
         }
         else if(strcmp(command, "mul_scalar") == 0)
         {
-            handleMulScalar(matrixMap, 6);
+            handleMulScalar(matrixMap);
         }
         else if(strcmp(command, "trans_mat") == 0)
         {
-            handleTransMat(matrixMap, 6);
+            handleTransMat(matrixMap);
         }
         else if(strcmp(command, "stop") == 0)
         {
@@ -95,7 +119,7 @@ int main()
     return 0;
 }
 
-void handleReadMat(MatrixMap* matrixMap, int size)
+void handleReadMat(MatrixMap* matrixMap)
 {
     // read_mat <matrix> <16 numbers>
     /*
@@ -105,8 +129,8 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     numList is the list of numbers
     allNumbersAreValid is a flag that indicates if all the numbers are valid
     */
-    float numList[16] = {0};
-    char matrixName[6];
+    float numList[AMOUNT_OF_NUMBERS] = {0};
+    char matrixName[SIZE_OF_MATRIX_NAME];
     mat *matrix = NULL;
     int i;
     char c;
@@ -115,7 +139,7 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     scanf("%s", matrixName);
 
     // Find the matrix in the lookup table
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
         {
@@ -135,10 +159,10 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     }
 
     // get all the numbers
-    for(i = 0; i < 16; i++)
+    for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
     {
         scanf("%f", &numList[i]);
-        if(numList[i] == '\n')
+        if(numList[i] == '\n' && numList[i] != 10)
         {
             break;
         }
@@ -158,11 +182,11 @@ void handleReadMat(MatrixMap* matrixMap, int size)
     read_mat(matrix, numList);
 }
 
-void handlePrintMat(MatrixMap* matrixMap, int size)
+void handlePrintMat(MatrixMap* matrixMap)
 {
     // print_mat <matrix>
     // Initialize all needed variables, matrixName is the name of the matrix, matrix is the pointer to the matrix
-    char matrixName[6];
+    char matrixName[SIZE_OF_MATRIX_NAME];
     mat *matrix = NULL;
 
     // get the matrix (every matrix name is mat_{A-F})
@@ -170,7 +194,7 @@ void handlePrintMat(MatrixMap* matrixMap, int size)
 
     // find the matrix in the lookup table
     int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
         {
@@ -188,9 +212,8 @@ void handlePrintMat(MatrixMap* matrixMap, int size)
     print_mat(matrix);
 }
 
-void handleAddMat(MatrixMap* matrixMap, int size)
+void handleAddMat(MatrixMap* matrixMap)
 {
-    // add_mat <matrix> <matrix> <result matrix>
     /*
     Initialize all needed variables:
     firstMatrix is the name of the first matrix
@@ -200,15 +223,15 @@ void handleAddMat(MatrixMap* matrixMap, int size)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[6], secondMatrix[6], resMatrix[6];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
+    int i;
 
     // get the matrices (every matrix name is mat_{A-F})
     scanf("%s %s %s", firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
-    int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
         {
@@ -234,7 +257,7 @@ void handleAddMat(MatrixMap* matrixMap, int size)
     add_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleSubMat(MatrixMap* matrixMap, int size)
+void handleSubMat(MatrixMap* matrixMap)
 {
     // sub_mat <matrix> <matrix> <result matrix>
     /*
@@ -246,7 +269,7 @@ void handleSubMat(MatrixMap* matrixMap, int size)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[6], secondMatrix[6], resMatrix[6];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
 
     // get the matrices (every matrix name is mat_{A-F})
@@ -254,7 +277,7 @@ void handleSubMat(MatrixMap* matrixMap, int size)
 
     // find all the matrices in the lookup table
     int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
         {
@@ -280,7 +303,7 @@ void handleSubMat(MatrixMap* matrixMap, int size)
     sub_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleMulMat(MatrixMap* matrixMap, int size)
+void handleMulMat(MatrixMap* matrixMap)
 {
     // mul_mat <matrix> <matrix> <result matrix>
     /*
@@ -292,7 +315,7 @@ void handleMulMat(MatrixMap* matrixMap, int size)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[6], secondMatrix[6], resMatrix[6];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
 
     // get the matrices (every matrix name is mat_{A-F})
@@ -300,7 +323,7 @@ void handleMulMat(MatrixMap* matrixMap, int size)
 
     // find all the matrices in the lookup table
     int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
         {
@@ -326,7 +349,7 @@ void handleMulMat(MatrixMap* matrixMap, int size)
     mul_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleMulScalar(MatrixMap* matrixMap, int size)
+void handleMulScalar(MatrixMap* matrixMap)
 {
     // mul_scalar <matrix> <scalar> <result matrix>
     /*
@@ -337,7 +360,7 @@ void handleMulScalar(MatrixMap* matrixMap, int size)
     matPointer is the pointer to the matrix
     resMatPointer is the pointer to the result matrix
     */
-    char matrixName[6], resMatrix[6];
+    char matrixName[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     float scalar;
     mat *matPointer = NULL, *resMatPointer = NULL;
 
@@ -360,7 +383,7 @@ void handleMulScalar(MatrixMap* matrixMap, int size)
 
     // find all the matrices in the lookup table
     int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
         {
@@ -381,7 +404,7 @@ void handleMulScalar(MatrixMap* matrixMap, int size)
     mul_scalar(matPointer, scalar, resMatPointer);
 }
 
-void handleTransMat(MatrixMap* matrixMap, int size)
+void handleTransMat(MatrixMap* matrixMap)
 {
     // trans_mat <matrix> <result matrix>
     /*
@@ -391,8 +414,12 @@ void handleTransMat(MatrixMap* matrixMap, int size)
     matPointer is the pointer to the matrix
     resMatPointer is the pointer to the result matrix
     */
-    char matrixName[6], resMatrix[6];
-    mat *matPointer = NULL, *resMatPointer = NULL;
+    char matrixName[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    mat *matPointer = NULL, *resMatPointer = NULL, tempMatrix;
+    int i;
+    float numbers[AMOUNT_OF_NUMBERS] = {0};
+
+    read_mat(&tempMatrix, numbers);
 
     // get the matrix name
     scanf("%s", matrixName);
@@ -401,8 +428,7 @@ void handleTransMat(MatrixMap* matrixMap, int size)
     scanf("%s", resMatrix);
 
     // find all the matrices in the lookup table
-    int i;
-    for(i = 0; i < size; i++)
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
         {
@@ -420,7 +446,7 @@ void handleTransMat(MatrixMap* matrixMap, int size)
         return;
     }
 
-    trans_mat(matPointer, resMatPointer);
+    trans_mat(matPointer, resMatPointer, &tempMatrix);
 }
 
 //gcc mainmat.c mymat.c -o mainmat
