@@ -71,7 +71,7 @@ int main()
     do {
         // A string that holds the command - 11 is the maximum length of a command ()
         char command[9];
-        scanf("%s", command);
+        scanf(" %s", command);
 
         if(strcmp(command, "read_mat") == 0)
         {
@@ -82,7 +82,7 @@ int main()
             handlePrintMat(matrixMap);
         }
         else if(strcmp(command, "add_mat") == 0)
-        {
+        {~
             handleAddMat(matrixMap);
         }
         else if(strcmp(command, "sub_mat") == 0)
@@ -136,7 +136,8 @@ void handleReadMat(MatrixMap* matrixMap)
     char c;
 
     // get the matrix (every matrix name is mat_{A-F})
-    scanf("%s", matrixName);
+    scanf(" %[^,]", matrixName);
+    printf("%s\n", matrixName);
 
     // Find the matrix in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -161,7 +162,7 @@ void handleReadMat(MatrixMap* matrixMap)
     // get all the numbers
     for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
     {
-        scanf("%f", &numList[i]);
+        scanf(", %f", &numList[i]);
         if(numList[i] == '\n' && numList[i] != 10)
         {
             break;
