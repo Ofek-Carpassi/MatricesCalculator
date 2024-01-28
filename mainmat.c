@@ -37,6 +37,7 @@ void handleSubMat(MatrixMap* matrixMap);
 void handleMulMat(MatrixMap* matrixMap);
 void handleMulScalar(MatrixMap* matrixMap);
 void handleTransMat(MatrixMap* matrixMap);
+void updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix);
 
 // The size of the matrix name (mat_{A-F})
 #define SIZE_OF_MATRIX_NAME 6
@@ -82,7 +83,7 @@ int main()
             handlePrintMat(matrixMap);
         }
         else if(strcmp(command, "add_mat") == 0)
-        {~
+        {
             handleAddMat(matrixMap);
         }
         else if(strcmp(command, "sub_mat") == 0)
@@ -130,14 +131,14 @@ void handleReadMat(MatrixMap* matrixMap)
     allNumbersAreValid is a flag that indicates if all the numbers are valid
     */
     float numList[AMOUNT_OF_NUMBERS] = {0};
-    char matrixName[SIZE_OF_MATRIX_NAME];
+    char matrixName[SIZE_OF_MATRIX_NAME] = "";
     mat *matrix = NULL;
     int i;
     char c;
 
     // get the matrix (every matrix name is mat_{A-F})
     scanf(" %[^,]", matrixName);
-    printf("%s\n", matrixName);
+    //printf("\n%s\n", matrixName);
 
     // Find the matrix in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -163,6 +164,7 @@ void handleReadMat(MatrixMap* matrixMap)
     for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
     {
         scanf(", %f", &numList[i]);
+        
         if(numList[i] == '\n' && numList[i] != 10)
         {
             break;
@@ -224,12 +226,12 @@ void handleAddMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i;
+    int i, j;
 
-    // get the matrices (every matrix name is mat_{A-F})
-    scanf("%s %s %s", firstMatrix, secondMatrix, resMatrix);
+    // get the matrices into matrices (every matrix name is mat_{A-F})
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -270,14 +272,14 @@ void handleSubMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
+    int i, j;
 
-    // get the matrices (every matrix name is mat_{A-F})
-    scanf("%s %s %s", firstMatrix, secondMatrix, resMatrix);
+    // get the matrices into matrices (every matrix name is mat_{A-F})
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
-    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
@@ -319,8 +321,8 @@ void handleMulMat(MatrixMap* matrixMap)
     char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
 
-    // get the matrices (every matrix name is mat_{A-F})
-    scanf("%s %s %s", firstMatrix, secondMatrix, resMatrix);
+    // get the matrices into matrices (every matrix name is mat_{A-F})
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
     int i;
@@ -366,10 +368,10 @@ void handleMulScalar(MatrixMap* matrixMap)
     mat *matPointer = NULL, *resMatPointer = NULL;
 
     // get the matrix name
-    scanf("%s ", matrixName);
+    scanf(" %[^,]", matrixName);
 
     // make sure the scalar is a real number
-    if(scanf("%f", &scalar) != 1)
+    if(scanf(", %f", &scalar) != 1)
     {
         printf("Argument is not a real number\n");
         // clear the buffer
@@ -380,7 +382,7 @@ void handleMulScalar(MatrixMap* matrixMap)
     }
 
     // get the result matrix name
-    scanf("%s", resMatrix);
+    scanf(", %s", resMatrix);
 
     // find all the matrices in the lookup table
     int i;
@@ -423,10 +425,7 @@ void handleTransMat(MatrixMap* matrixMap)
     read_mat(&tempMatrix, numbers);
 
     // get the matrix name
-    scanf("%s", matrixName);
-
-    // get the result matrix name
-    scanf("%s", resMatrix);
+    scanf(" %[^,], %s", matrixName, resMatrix);
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -448,6 +447,80 @@ void handleTransMat(MatrixMap* matrixMap)
     }
 
     trans_mat(matPointer, resMatPointer, &tempMatrix);
+}
+
+void updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
+{
+    char matrices[SIZE_OF_MATRIX_NAME*3 + 2];
+    int i, j;
+
+    // get the matrices into matrices (every matrix name is mat_{A-F})
+    scanf("%[^\n]", matrices);
+   // printf("%s\n", matrices);
+
+    for(i = 1; i < SIZE_OF_MATRIX_NAME*3+2 && matrices[i] != '\0'; i++)
+    {
+        //printf("%d\n", i);
+        if(matrices[i] == ',' || i == SIZE_OF_MATRIX_NAME*3+1)
+        {
+            //printf("in , %d\n", i);
+
+            if(matrices[i-1] == ',' || matrices[i+1] == ',')
+            {
+                printf("Multiple consecutive commas\n");
+
+                while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
+
+                return;
+            }
+
+            if(i == 6)
+            {
+                for(j = 0; j < i-1; j++)
+                {
+                    *(firstMatrix+j) = matrices[j+1];
+                }
+                *(firstMatrix+j) = '\0';
+                //printf("%s\n", firstMatrix);
+            }
+            else if(i == 13)
+            {
+                // get the matrix in the middle (7-12)
+                for(j = 0; j < i-8; j++)
+                {
+                    *(secondMatrix+j) = matrices[j+8];
+                }
+                *(secondMatrix+i-8) = '\0';
+                //printf("%s\n", secondMatrix);
+            }
+            else if(i == 19)
+            {
+                // get the matrix in the end (13-18)
+                for(j = 0; j < i-14; j++)
+                {
+                    *(resMatrix+j) = matrices[j+15];
+                }
+                *(resMatrix+i-14) = '\0';
+                //printf("%s\n", resMatrix);
+            }
+            else
+            {
+                printf("Illegal comma\n");
+
+                while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
+
+                return;
+            }
+        }
+        if((i == 6 || i == 13) && matrices[i] != ',')
+        {
+            printf("Missing comma\n");
+
+            while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
+
+            return;
+        }
+    }
 }
 
 //gcc mainmat.c mymat.c -o mainmat

@@ -1,0 +1,8 @@
+✔ Add comma handling in all functions @done (1/28/2024, 5:16:48 PM)
+☐ Missing comma error - read_mat, mul_scalar, trans_mat
+☐ Extraneous text after end of command error
+☐ Missing argument error
+☐ Multiple consecutive commas error - read_mat, mul_scalar, trans_mat
+☐ Argument is not a scalar error
+☐ Illegal comma error - read_mat, mul_scalar, trans_mat
+☐ Break main function into smaller functions
