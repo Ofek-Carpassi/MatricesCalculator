@@ -37,18 +37,19 @@ void handleSubMat(MatrixMap* matrixMap);
 void handleMulMat(MatrixMap* matrixMap);
 void handleMulScalar(MatrixMap* matrixMap);
 void handleTransMat(MatrixMap* matrixMap);
-int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix);
+void updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix);
 
 // The size of the matrix name (mat_{A-F})
 #define SIZE_OF_MATRIX_NAME 6
 #define AMOUNT_OF_NUMBERS 16
+#define FALSE 0 
+#define TRUE 1
 
 // The main function - initializes all the matrices to zero and gets the command from the user
 int main()
 {
     // Create all the matrices using the "mat" struct created in mymat.h
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
-    char c;
 
     // Create a lookup table for the matrices - using the MatrixMap struct
     MatrixMap matrixMap[] ={
@@ -112,6 +113,7 @@ int main()
         {
             printf("Undefined command name\n");
             // clear the buffer
+            char c;
             while((c = getchar()) != '\n' && c != EOF);
         }
 
@@ -131,12 +133,14 @@ void handleReadMat(MatrixMap* matrixMap)
     allNumbersAreValid is a flag that indicates if all the numbers are valid
     */
     float numList[AMOUNT_OF_NUMBERS] = {0};
-    char matrixName[SIZE_OF_MATRIX_NAME] = "", c;
+    char matrixName[SIZE_OF_MATRIX_NAME] = "";
     mat *matrix = NULL;
     int i;
+    char c;
 
     // get the matrix (every matrix name is mat_{A-F})
     scanf(" %[^,]", matrixName);
+    //printf("\n%s\n", matrixName);
 
     // Find the matrix in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -189,12 +193,12 @@ void handlePrintMat(MatrixMap* matrixMap)
     // Initialize all needed variables, matrixName is the name of the matrix, matrix is the pointer to the matrix
     char matrixName[SIZE_OF_MATRIX_NAME];
     mat *matrix = NULL;
-    int i;
 
     // get the matrix (every matrix name is mat_{A-F})
     scanf("%s", matrixName);
 
     // find the matrix in the lookup table
+    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
@@ -224,15 +228,12 @@ void handleAddMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i;
+    int i, j;
 
     // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) != 0)
-    {
-        return;
-    }
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -273,15 +274,12 @@ void handleSubMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i;
+    int i, j;
 
     // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) != 0)
-    {
-        return;
-    }
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -324,15 +322,12 @@ void handleMulMat(MatrixMap* matrixMap)
     */
     char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i;
 
     // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) != 0)
-    {
-        return;
-    }
+    updateAllMatrices(firstMatrix, secondMatrix, resMatrix);
 
     // find all the matrices in the lookup table
+    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
@@ -372,8 +367,6 @@ void handleMulScalar(MatrixMap* matrixMap)
     */
     char matrixName[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
     float scalar;
-    char c;
-    int i;
     mat *matPointer = NULL, *resMatPointer = NULL;
 
     // get the matrix name
@@ -382,8 +375,9 @@ void handleMulScalar(MatrixMap* matrixMap)
     // make sure the scalar is a real number
     if(scanf(", %f", &scalar) != 1)
     {
-        printf("Argument is not a scalar\n");
+        printf("Argument is not a real number\n");
         // clear the buffer
+        char c;
         while((c = getchar()) != '\n' && c != EOF);
 
         return;
@@ -393,6 +387,7 @@ void handleMulScalar(MatrixMap* matrixMap)
     scanf(", %s", resMatrix);
 
     // find all the matrices in the lookup table
+    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
@@ -456,78 +451,96 @@ void handleTransMat(MatrixMap* matrixMap)
     trans_mat(matPointer, resMatPointer, &tempMatrix);
 }
 
-int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
+void updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
 {
-    char *matrices;
-    int i, j, indexStart, commasCounter;
+    char matrices[SIZE_OF_MATRIX_NAME*5 + 2];
+    int i, j;
+    int placementOfFirstComma = 5, placementOfSecondComma = 0, placementOfCommandEnd = 0, startOfThirdMatrixName = 0;
+    int hasSeenFirstComma = FALSE, hasSeenSecondComma = FALSE, isInThirdMatrixName = FALSE;
 
     // get the matrices into matrices (every matrix name is mat_{A-F})
     scanf("%[^\n]", matrices);
-    commasCounter = 0;
 
-    // check if the first character is a space or a tab
     for(i = 0; i < strlen(matrices) && matrices[i] != '\0'; i++)
     {
-        for(; i < SIZE_OF_MATRIX_NAME*3+2 && (matrices[i] == ' ' || matrices[i] == '\t'); i++);
+        if(hasSeenFirstComma == TRUE && hasSeenSecondComma == TRUE && isInThirdMatrixName != TRUE && matrices[i] == 'M')
+        {
+            isInThirdMatrixName = TRUE;
+            startOfThirdMatrixName = i;
+        }
+
+        if((matrices[i] == ' ' || matrices[i] == '\t') && hasSeenFirstComma == FALSE)
+        {
+            placementOfFirstComma += 1;
+        }
+        else if((matrices[i] == ' ' || matrices[i] == '\t') && hasSeenFirstComma == TRUE && hasSeenSecondComma == FALSE)
+        {
+            placementOfSecondComma += 1;
+        }
+        else if((matrices[i] == ' ' || matrices[i] == '\t') && hasSeenFirstComma == TRUE && hasSeenSecondComma == TRUE && isInThirdMatrixName == FALSE)
+        {
+            placementOfCommandEnd += 1;
+        }
 
         if(matrices[i] == ',')
         {
-            printf("in , %d\n", i);
-
             if(matrices[i-1] == ',' || matrices[i+1] == ',')
             {
                 printf("Multiple consecutive commas\n");
 
                 while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
 
-                return 1;
+                return;
             }
 
-            if(matrices[i] == ',' && commasCounter == 0 && matrices[i-1] != ' ' && matrices[i-1] != '\t')
+            if(i == placementOfFirstComma)
             {
-                for(j = i-5; j < i-1; j++)
+                for(j = 0; j < SIZE_OF_MATRIX_NAME-1; j++)
                 {
-                    *(firstMatrix+j-1) = matrices[j];
+                    *(firstMatrix+j) = matrices[j+placementOfFirstComma-5];
                 }
-                *(firstMatrix+j) = '\0';
+                *(firstMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
+                hasSeenFirstComma = TRUE;
+                placementOfSecondComma = placementOfFirstComma+6;
             }
-            else if(matrices[i] == ',' && commasCounter == 1 && matrices[i-1] != ' ' && matrices[i-1] != '\t')
+            else if(i == placementOfSecondComma)
             {
-                // get the matrix in the middle (7-12)
-                for(j = i-13; j < i-8; j++)
+                for(j = 0; j < SIZE_OF_MATRIX_NAME-1; j++)
                 {
-                    *(secondMatrix+j) = matrices[j+8];
+                    *(secondMatrix+j) = matrices[j+placementOfSecondComma-5];
                 }
-                *(secondMatrix+i-8) = '\0';
-            }
-            else if((matrices[i] != ' ' || matrices[i] != '\t') && commasCounter >= 2)
-            {
-                printf("Extraneous text after end of command\n");
-
-                while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
-
-                return 1;
+                *(secondMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
+                hasSeenSecondComma = TRUE;
+                placementOfCommandEnd = placementOfSecondComma+6;
             }
             else
             {
+                printf("First comma: %d, Second comma: %d", placementOfFirstComma, placementOfSecondComma);
+                printf(", i: %d\n", i);
                 printf("Illegal comma\n");
 
                 while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
 
-                return 1;
+                return;
             }
-        }
-        if(matrices[i] == ' ' && matrices[i-1] != ',')
-        {
-            printf("Missing comma\n");
-
-            while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
-
-            return 1;
         }
     }
 
-    return 0;
+    for(j = 0; j < placementOfCommandEnd - startOfThirdMatrixName + 1; j++ && isInThirdMatrixName)
+    {
+        *(resMatrix+j) = matrices[j+startOfThirdMatrixName];
+    }
+    *(resMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
+
+
+    if(matrices[placementOfFirstComma] != ',' || matrices[placementOfSecondComma] != ',')
+    {
+        printf("Missing comma\n");
+
+        while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
+
+        return;
+    }
 }
 
 //gcc mainmat.c mymat.c -o mainmat
