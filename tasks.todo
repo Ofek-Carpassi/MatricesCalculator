@@ -1,11 +1,11 @@
 ✔ Add comma handling in all functions @done (1/28/2024, 5:16:48 PM)
 ☐ Missing comma error - read_mat, mul_scalar, trans_mat
 ☐ Extraneous text after end of command error 
-☐ Missing argument error
+☐ Missing argument error - read_mat, mul_scalar, trans_mat
 ☐ Multiple consecutive commas error - read_mat, mul_scalar, trans_mat
 ✔ Argument is not a scalar error @done (1/28/2024, 11:01:39 PM)
 ☐ Illegal comma error - read_mat, mul_scalar, trans_mat
 ☐ Break main function into smaller functions
-☐ Make everything work with tabs and spaces (not just spaces)
+☐ Make everything work with tabs and spaces - read_mat, mul_scalar, trans_mat
 ☐ Make sure there aren't any magic numbers
 ☐ Add comments to all functions
