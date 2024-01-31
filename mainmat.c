@@ -473,11 +473,12 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
     hasSeenFirstComma is a flag that indicates if the first comma was seen
     hasSeenSecondComma is a flag that indicates if the second comma was seen
     isInThirdMatrixName is a flag that indicates if the third matrix name is being read
+    hasSeenEndOfCommand is a flag that indicates if the end of the command was seen
     */
     char matrices[SIZE_OF_MATRIX_NAME*5 + 2];
     int i, j;
     int placementOfFirstComma = 5, placementOfSecondComma = 0, placementOfCommandEnd = 0, startOfThirdMatrixName = 0;
-    int hasSeenFirstComma = FALSE, hasSeenSecondComma = FALSE, isInThirdMatrixName = FALSE;
+    int hasSeenFirstComma = FALSE, hasSeenSecondComma = FALSE, isInThirdMatrixName = FALSE, hasSeenEndOfCommand = FALSE;
 
     // get the entire input into matrices
     scanf("%[^\n]", matrices);
@@ -485,6 +486,25 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
     // run on all the input and find the first comma, the second comma and the end of the command
     for(i = 0; i < strlen(matrices) && matrices[i] != '\0'; i++)
     {
+        // if the current character is not a whitespace and we have already seen the end of the command - print an error and return
+        if(matrices[i] != ' ' && matrices[i] != '\t' && hasSeenEndOfCommand == TRUE)
+        {
+            // if there are extraneous text after the end of the command - print an error and return
+            printf("Extraneous text after end of command\n");
+
+            // clear the buffer
+            while((matrices[i] = getchar()) != '\n' && matrices[i] != EOF);
+
+            // return false (the command is not valid)
+            return FALSE;
+        }
+
+        // Check if we are in the end of the command
+        if(i == placementOfCommandEnd && placementOfCommandEnd != 0)
+        {
+            hasSeenEndOfCommand = TRUE; // update the flag that indicates that we have seen the end of the command
+        }
+
         // if we are in the start of the third matrix name
         if(hasSeenFirstComma == TRUE && hasSeenSecondComma == TRUE && isInThirdMatrixName != TRUE && matrices[i] == 'M')
         {
@@ -492,7 +512,6 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
             isInThirdMatrixName = TRUE;
             startOfThirdMatrixName = i; // save the index of the start of the third matrix name
             placementOfCommandEnd = i + 4; // the length of the third matrix name is 5 so the end of the command is the index of the start of the third matrix name + 4
-            break; // break the loop
         }
 
         // if the current character is a whitespace and we haven't seen the first comma yet - update the index of the first comma
