@@ -12,6 +12,7 @@ mymat.h - for the matrix functions (mymat.h is a header file that I created)
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "mymat.h"
 
 // A struct that maps between a matrix name and a pointer to the matrix
@@ -38,6 +39,8 @@ void handleMulMat(MatrixMap* matrixMap);
 void handleMulScalar(MatrixMap* matrixMap);
 void handleTransMat(MatrixMap* matrixMap);
 int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix);
+int inputReadMat(char *matrixName, float *numList);
+void updatePlacementOfCommas(int *placementOfCommas);
 
 // The size of the matrix name (mat_{A-F})
 #define SIZE_OF_MATRIX_NAME 6
@@ -138,9 +141,10 @@ void handleReadMat(MatrixMap* matrixMap)
     int i;
     char c;
 
-    // get the matrix (every matrix name is mat_{A-F})
-    scanf(" %[^,]", matrixName);
-    //printf("\n%s\n", matrixName);
+    if(inputReadMat(matrixName, numList) == FALSE)
+    {
+        return;
+    }
 
     // Find the matrix in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -475,7 +479,7 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
     isInThirdMatrixName is a flag that indicates if the third matrix name is being read
     hasSeenEndOfCommand is a flag that indicates if the end of the command was seen
     */
-    char matrices[SIZE_OF_MATRIX_NAME*5 + 2];
+    char matrices[SIZE_OF_MATRIX_NAME*10];
     int i, j;
     int placementOfFirstComma = 5, placementOfSecondComma = 0, placementOfCommandEnd = 0, startOfThirdMatrixName = 0;
     int hasSeenFirstComma = FALSE, hasSeenSecondComma = FALSE, isInThirdMatrixName = FALSE, hasSeenEndOfCommand = FALSE;
@@ -629,6 +633,215 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
     }
 
     return TRUE; // return true (the command is valid)
+}
+
+int inputReadMat(char *matrixName, float *numList)
+{
+    char input[350];
+    int i, j, k;
+    int placementOfCommas[AMOUNT_OF_NUMBERS] = {0}, startOfLastNum = 0, endOfLastNum = 0; // an array that holds the index of all the commas
+    int hasSeenCommas[AMOUNT_OF_NUMBERS] = {FALSE}, hasSeenEndOfCommand = FALSE;
+    int inputLength = 0;
+
+    // get the entire input into
+    scanf("%[^\n]", input);
+    printf("%s\n", input);
+    inputLength = strlen(input);
+
+    placementOfCommas[0] = 5; // the index of the first comma is 5 (read_mat MAT_A, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    for(i = 0; i < inputLength && (input[i] != '\0' || input[i] != '\n'); i++)
+    { /* read_mat MAT_A, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8 */
+        // No need to check for extraneous text because the command is read_mat and it reads numbers so we can print "argument is not a real number"
+        // update placementOfCommas - the index of the comma is the index of the first comma + 2 (at the base case the index of the comma is the index of the first comma + 2)
+        // DEBUG PRINTING ALL NEEDED THINGS
+        /* printf("i = %d, input[i] = %c, input[i+1] = %c, input[i-1] = %c\n", i, input[i], input[i+1], input[i-1]);
+        printf("isdigit(input[i]): %d, (input[i+1] != ',' && input[i+1] != '\\0' && input[i+1] != '\\n'): %d, isdigit(input[i-1]): %d\n", isdigit(input[i]), (input[i+1] != ',' && input[i+1] != '\0' && input[i+1] != '\n'), isdigit(input[i-1]));
+        printf("input[i] == ' ' || input[i] == '\t' || (isdigit(input[i] && ((input[i+1] != ',' && input[i+1] != '\\0' && input[i+1] != '\\n') || isdigit(input[i-1])))): %d\n", (input[i] == ' ' || input[i] == '\t' || (isdigit(input[i] && ((input[i+1] != ',' && input[i+1] != '\0' && input[i+1] != '\n') || isdigit(input[i-1]))))));
+        printf("(input[i+1] != ',' && input[i+1] != '\\0' && input[i+1] != '\\n') || isdigit(input[i-1]): %d\n", ((input[i+1] != ',' && input[i+1] != '\0' && input[i+1] != '\n') || isdigit(input[i-1]))); */
+        printf("i = %d, input[i] = %c, input[i+1] = %c, input[i-1] = %c\n", i, input[i], input[i+1], input[i-1]);
+        if(input[i] == ' ' || input[i] == '\t' || (isdigit(input[i]) && ((input[i+1] != ',' && input[i+1] != '\0' && input[i+1] != '\n'))))
+        {
+            printf("THE IF IS TRUE\n");
+            for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
+            {
+                printf("j = %d, placementOfCommas[j] = %d\n", j, placementOfCommas[j]);
+                if(hasSeenCommas[j] == FALSE)
+                {
+                    printf("J IS CHANGED!! j = %d\n", j);
+                    placementOfCommas[j] += 1;
+                    break;
+                }
+            }
+        }
+
+        if(input[i] == ',')
+        {
+            if(input[i-1] == ',' || input[i+1] == ',')
+            {
+                for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
+                {
+                    if(i == placementOfCommas[i])
+                    {
+                        printf("Multiple consecutive commas\n");
+                        break;
+                    }
+                    else
+                    {
+                        printf("First Illegal comma\n");
+                        printf("Illegal comma\n");
+                        break;
+                    }
+                }
+
+                while((input[i] = getchar()) != '\n' && input[i] != EOF);
+
+                return FALSE;
+            }
+
+            for(k = 0; k < AMOUNT_OF_NUMBERS; k++)
+            {
+                if(hasSeenCommas[j] == TRUE)
+                {
+                    printf("hasSeenCommas[j] = %d, j = %d\n", hasSeenCommas[j], j+1);
+                    j++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            for(; j < AMOUNT_OF_NUMBERS; j++)
+            {
+                for(k = 0; k < AMOUNT_OF_NUMBERS; k++)
+                {
+                    printf("%d ", placementOfCommas[k]);
+                }
+                printf("\n");
+                for(k = 0; k < AMOUNT_OF_NUMBERS; k++)
+                {
+                    printf("%d ", hasSeenCommas[k]);
+                }
+                printf("\n");
+                if(i == placementOfCommas[j] && j == 0)
+                {
+                    for(k = 0; k < SIZE_OF_MATRIX_NAME-1; k++)
+                    {
+                        *(matrixName+k) = input[k + placementOfCommas[0]-5];
+                    }
+                    *(matrixName+SIZE_OF_MATRIX_NAME-1) = '\0';
+                    hasSeenCommas[0] = TRUE;
+                    placementOfCommas[1] = placementOfCommas[0] + 2;
+                    break;
+                }
+                else if(i == placementOfCommas[j])
+                {
+                    printf("we are in the else if. i = %d, j = %d, placementOfCommas[j] = %d\n", i, j, placementOfCommas[j]);
+                    int startIndexOfNum = 0;
+                    for(startIndexOfNum = i-1; startIndexOfNum > i-9; startIndexOfNum--)
+                    {
+                        if((input[startIndexOfNum] == ' ' || input[startIndexOfNum] == '\t') && isdigit(input[startIndexOfNum+1]))
+                        {
+                            printf("input[startIndexOfNum] = %c, isdigit(input[startIndexOfNum+1]) = %d, ", input[startIndexOfNum], isdigit(input[startIndexOfNum+1]));
+                            startIndexOfNum++;
+                            break;
+                        }
+                    }
+                    printf("startIndexOfNum = %d, i-startIndexOfNum+1 = %d\n", startIndexOfNum, i-startIndexOfNum+1);
+                    char substring[i - startIndexOfNum + 1];
+
+                    for(k = startIndexOfNum; k < i + 1; k++)
+                    {
+                        printf("k = %d, startIndexOfNum = %d, k-startIndexOfNum = %d, input[k] = %c", k, startIndexOfNum, k-startIndexOfNum, input[k]);
+                        substring[k-startIndexOfNum] = input[k]; 
+                        printf(", substring[k-startIndexOfNum] = %c\n", substring[k-startIndexOfNum]);
+                    }
+                    substring[strlen(substring)] = '\0';
+
+                    printf("substring = %s, ", substring);
+                    printf("atof(substring) = %f, ", atof(substring));
+
+                    *(numList+j-1) = atof(substring);
+                    printf("numList[%d] = %f\n", j-1,*(numList+j-1));
+                    hasSeenCommas[j] = TRUE;
+                    placementOfCommas[j+1] = placementOfCommas[j] + 2;
+                    break;
+                }
+                else
+                {
+                    printf("i = %d\n", i);
+                    printf("Second Illegal comma\n");
+                    printf("Illegal comma\n");
+
+                    while((input[i] = getchar()) != '\n' && input[i] != EOF);
+
+                    return FALSE;
+                }
+            }
+        }
+    }
+
+    startOfLastNum = placementOfCommas[AMOUNT_OF_NUMBERS-1] + 2;
+    printf("Start StartOfLastNum = %d\n", startOfLastNum);
+    printf("strlen(input) = %d\n", inputLength);
+
+    for(i = startOfLastNum; i < inputLength && (input[i] != '\0' || input[i] != '\n'); i++)
+    {
+        if(isdigit(input[i]) && (input[i-1] == ' ' || input[i-1] == '\t'))
+        {
+            startOfLastNum = i;
+        }
+        printf("input[i] = %c, input[i+1] = %c\n", input[i], input[i+1]);
+        if(isdigit(input[i]) && (input[i+1] == ' ' || input[i+1] == '\t' || input[i+1] == '\n' || input[i+1] == '\0'))
+        {
+            endOfLastNum = i;
+        }
+        if(isalpha(input[i]))
+        {
+            printf("Argument is not a real number\n");
+
+            while((input[i] = getchar()) != '\n' && input[i] != EOF);
+
+            return FALSE;
+        }
+    }
+    printf("startOfLastNum = %d, endOfLastNum = %d\n", startOfLastNum, endOfLastNum);
+
+    char substring[endOfLastNum - startOfLastNum + 1];
+
+    for(i = startOfLastNum; i < endOfLastNum + 1; i++)
+    {
+        printf("i = %d, startOfLastNum = %d, i-startOfLastNum = %d\n", i, startOfLastNum, i-startOfLastNum);
+        substring[i-startOfLastNum] = input[i]; 
+    }
+    substring[strlen(substring)] = '\0';
+    
+    printf("substring = %s, ", substring);
+    *(numList+AMOUNT_OF_NUMBERS-1) = atof(substring);
+
+    for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
+    {
+        printf("%f, ", *(numList+i));
+    }
+    printf("\n");
+    // print the matrix name for debug
+    for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
+    {
+        printf("%c", *(matrixName+i));
+    }
+    printf("\n");
+
+    /* for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
+    {
+        if(hasSeenCommas[i] == FALSE)
+        {
+            printf("Missing argument\n");
+
+            while((input[i] = getchar()) != '\n' && input[i] != EOF);
+
+            return FALSE;
+        }
+    } */
 }
 
 //gcc mainmat.c mymat.c -o mainmat
