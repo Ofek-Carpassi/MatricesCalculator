@@ -605,158 +605,192 @@ int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
 
 int inputReadMat(char *matrixName, float *numList)
 {
+    /*
+    Initialize all needed variables:
+    input is the entire input
+    i, j, k are counters
+    placementOfCommas is an array that holds the index of the placement of the commas
+    startOfLastNum is the index of the start of the last number
+    endOfLastNum is the index of the end of the last number
+    hasSeenCommas is a flag array that indicates if we have seen each of the commas
+    hasSeenEndOfCommand is a flag that indicates if we have seen the end of the command
+    inputLength is the length of the input
+    */
     char input[350];
     int i, j, k, placementOfCommas[AMOUNT_OF_NUMBERS] = {0}, startOfLastNum = 0, endOfLastNum = 0, hasSeenCommas[AMOUNT_OF_NUMBERS] = {FALSE}, hasSeenEndOfCommand = FALSE, inputLength = 0;
 
-    // get the entire input into
+    // Get the entire input into input
     scanf("%[^\n]", input);
-    inputLength = strlen(input);
-    input[inputLength] = '\0';
+    inputLength = strlen(input); // save the length of the input
+    input[inputLength] = '\0'; // add the null terminator to the end of the string
 
-    placementOfCommas[0] = 5; // the index of the first comma is 5 (read_mat MAT_A, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10) (not including the first space)
+    placementOfCommas[0] = 5; // at the base casethe index of the first comma is 5 (not including the first space)
     for(i = 0; i < inputLength && input[i] != '\0'; i++)
     { 
+        // Check a place that should have a number has a letter - print error of "Argument is not a real number" and return
         if(isalpha(input[i]) && hasSeenCommas[0] == TRUE)
         {
-            printf("Argument is not a real number\n");
+            printf("Argument is not a real number\n"); // print the error
 
-            cleanBuffer();
+            cleanBuffer(); // clear the buffer
 
-            return FALSE;
+            return FALSE; // return false (the command is not valid)
         }
 
-        if(input[i] == ' ' || input[i] == '\t' || (isdigit(input[i]) && ((input[i+1] != ',' && input[i+1] != '\0' && input[i+1] != '\n'))))
+        // Update the placement of the commas
+        // If the current character is a whitespace or a digit and the next character is not a comma or the end of the string (the number is longer than 1 digit) - update the placement of the commas (the index of the placement of the commas + 1
+        if(input[i] == ' ' || input[i] == '\t' || (isdigit(input[i]) && (input[i+1] != ',' && input[i+1] != '\0')))
         {
+            // Find the index of the comma we still haven't seen
             for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
             {
+                // If we haven't seen the comma - we are searching for the index of the comma
                 if(hasSeenCommas[j] == FALSE)
                 {
-                    placementOfCommas[j] += 1;
-                    break;
+                    placementOfCommas[j] += 1; // Change the index of the comma
+                    break; // Break the loop - so we won't change other indexes
                 }
             }
         }
 
+        // If the current character is a comma - start the process of saving the matrix name and the numbers
         if(input[i] == ',')
         {
-            if(input[i-1] == ',' || input[i+1] == ',')
+            // If the character after the comma is a comma - print an error and return
+            if(input[i+1] == ',')
             {
+                // Check if there should be a comma in the place of the current comma - if so print an error of multiple consecutive commas
                 for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
                 {
+                    // There should be a comma in the place of the current comma
                     if(i == placementOfCommas[i])
                     {
-                        printf("Multiple consecutive commas\n");
-                        break;
+                        printf("Multiple consecutive commas\n"); // print an error of multiple consecutive commas
+                        break; // break the loop
                     }
                     else
                     {
-                        printf("Illegal comma\n");
-                        break;
+                        printf("Illegal comma\n"); // print an error of illegal comma
+                        break; // break the loop
                     }
                 }
 
-                cleanBuffer();
+                cleanBuffer(); // clear the buffer
 
-                return FALSE;
+                return FALSE; // return false (the command is not valid)
             }
 
+            // A loop to find the index of the comma we are currently at (the index not in input but in placementOfCommas)
             for(k = 0; k < AMOUNT_OF_NUMBERS; k++)
             {
+                // If we have already seen the comma - continue to the next index
                 if(hasSeenCommas[j] == TRUE)
                 {
                     j++;
                 }
                 else
                 {
-                    break;
+                    break; // break out - we found the placement of the current comma in placementOfCommas
                 }
             }
 
+            // A loop to update the matrix name and the numbers
             for(; j < AMOUNT_OF_NUMBERS; j++)
             {
+                // If we are at the first comma - save the matrix name
                 if(i == placementOfCommas[j] && j == 0)
                 {
+                    // A loop to save the matrix name
                     for(k = 0; k < SIZE_OF_MATRIX_NAME-1; k++)
                     {
-                        *(matrixName+k) = input[k + placementOfCommas[0]-5];
+                        *(matrixName+k) = input[k + placementOfCommas[0]-5]; // 5 - the length of each matrix name
                     }
-                    *(matrixName+SIZE_OF_MATRIX_NAME-1) = '\0';
-                    hasSeenCommas[0] = TRUE;
-                    placementOfCommas[1] = placementOfCommas[0] + 2;
-                    break;
+                    *(matrixName+SIZE_OF_MATRIX_NAME-1) = '\0'; // add the null terminator to the end of the string
+                    hasSeenCommas[0] = TRUE; // update the flag that indicates that we have seen the first comma
+                    placementOfCommas[1] = placementOfCommas[0] + 2; // update the index of the second comma, +2 because at the base case the index of the second comma is the index of the first comma + 2 (and all the other indexes are updated in the same way)
+                    break; // break the loop
                 }
+                // If we are at a number comma - save the number
                 else if(i == placementOfCommas[j])
                 {
-                    int startIndexOfNum = 0;
+                    int startIndexOfNum = 0; // Find the start of the number
                     for(startIndexOfNum = i-1; startIndexOfNum > i-9; startIndexOfNum--)
                     {
-                        if((input[startIndexOfNum] == ' ' || input[startIndexOfNum] == '\t') && isdigit(input[startIndexOfNum+1]))
+                        if((input[startIndexOfNum] == ' ' || input[startIndexOfNum] == '\t') && isdigit(input[startIndexOfNum+1])) // If the character is a whitespace and the next character is a digit - we found the start of the number
                         {
-                            startIndexOfNum++;
-                            break;
+                            startIndexOfNum++; // Increment the index of the start of the number - because the current character is a whitespace
+                            break; // break the loop
                         }
                     }
-                    char substring[i - startIndexOfNum + 1];
-
+                    char substring[i - startIndexOfNum + 1]; // Create a substring to save the number into, i - startIndexOfNum + 1 is the length of the substring because the length of the number is i - startIndexOfNum and we need to add 1 for the null terminator
+                    
+                    // A loop to save the number
                     for(k = startIndexOfNum; k < i + 1; k++)
                     {
-                        substring[k-startIndexOfNum] = input[k];
+                        substring[k-startIndexOfNum] = input[k]; // Saving each digit of the number into the substring
                     }
-                    substring[strlen(substring)] = '\0';
 
-                    *(numList+j-1) = atof(substring);
-                    hasSeenCommas[j] = TRUE;
-                    placementOfCommas[j+1] = placementOfCommas[j] + 2;
-                    break;
+                    substring[strlen(substring)] = '\0'; // add the null terminator to the end of the string
+
+                    *(numList+j-1) = atof(substring); // save the number into the numList array - atof is a function that converts a string to a float
+                    hasSeenCommas[j] = TRUE; // update the flag that indicates that we have seen the current comma
+                    placementOfCommas[j+1] = placementOfCommas[j] + 2; // update the index of the next comma
+                    break; // break the loop
                 }
+                // If there is a comma in a place that should not have a comma - print an error and return
                 else
                 {
-                    printf("Illegal comma\n");
+                    printf("Illegal comma\n"); // print an error of illegal comma
 
-                    cleanBuffer();
+                    cleanBuffer(); // clear the buffer
 
-                    return FALSE;
+                    return FALSE; // return false (the command is not valid)
                 }
             }
         }
     }
 
-
     // Find the start of the last number
     for(j = i; j > 0; j--)
     {
+        // If the current character is a digit and the previous character is a whitespace - we found the start of the last number
         if(isdigit(input[j]) && (input[j-1] == ' ' || input[j-1] == '\t'))
         {
-            startOfLastNum = j;
-            break;
+            startOfLastNum = j; // save the index of the start of the last number
+            break; // break the loop
         }
     }
 
     // A loop to find the end of the last number
     for(i = startOfLastNum; i < inputLength && (input[i] != '\0' || input[i] != '\n'); i++)
     {
-        if(isdigit(input[i]) && (input[i+1] == ' ' || input[i+1] == '\t' || input[i+1] == '\n' || input[i+1] == '\0'))
+        // If the current character is a digit and the next character is a whitespace - we found the end of the last number or the end of the string
+        if(isdigit(input[i]) && (input[i+1] == ' ' || input[i+1] == '\t' || input[i+1] == '\0'))
         {
-            endOfLastNum = i;
+            endOfLastNum = i; // save the index of the end of the last number
+            break; // break the loop
         }
     }
 
-    char substring[endOfLastNum - startOfLastNum + 1];
+    char substring[endOfLastNum - startOfLastNum + 1]; // Create a substring to save the number into, endOfLastNum - startOfLastNum + 1 is the length of the substring because the length of the number is endOfLastNum - startOfLastNum and we need to add 1 for the null terminator
 
+    // A loop to save the last number
     for(i = startOfLastNum; i < endOfLastNum + 1; i++)
     {
-        substring[i-startOfLastNum] = input[i]; 
+        substring[i-startOfLastNum] = input[i]; // Saving each digit of the number into the substring
     }
-    substring[strlen(substring)] = '\0';
+    substring[strlen(substring)] = '\0'; // add the null terminator to the end of the string
 
     // Find where the last number should be placed
     for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
     {
+        // If there is somewhere we haven't placed a number yet - place the last number there
         if(hasSeenCommas[i] == FALSE)
         {
             *(numList+i-1) = atof(substring);
             break;
         }
+        // If we are at the last number and we have placed all the numbers - place the last number in the last place
         if(i == AMOUNT_OF_NUMBERS-1)
         {
             *(numList+AMOUNT_OF_NUMBERS-1) = atof(substring);
@@ -764,19 +798,20 @@ int inputReadMat(char *matrixName, float *numList)
         }
     }
 
+    // If we haven't seen the first comma - there isn't the matrix name - print an error and return, if we haven't seen the second comma - there aren't enough numbers - print an error and return
     if(hasSeenCommas[0] == FALSE || hasSeenCommas[1] == FALSE)
     {
-        printf("Missing argument\n");
+        printf("Missing argument\n"); // print an error of missing argument
 
-        cleanBuffer();
+        cleanBuffer(); // clear the buffer
 
-        return FALSE;
+        return FALSE; // return false (the command is not valid)
     }
 }
 
 void cleanBuffer()
 {
-    while(getchar() != '\n');
+    while(getchar() != '\n'); // clear the buffer
 }
 
 //gcc mainmat.c mymat.c -o mainmat
