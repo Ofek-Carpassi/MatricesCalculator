@@ -1,59 +1,43 @@
-// A calculator for matrices.
-// The main function, all the intercation with the user and the command analysis.
-// Input: <command> <arg1>, <arg2>, <arg3> (all the arguments are separated by commas and spaces)
+/* A calculator for matrices. */
+/* The main function, all the intercation with the user and the command analysis. */
+/* Input: <command> <arg1>, <arg2>, <arg3> (all the arguments are separated by commas and spaces) */
 
-/*
-Importing all the needed libraries:
-stdio.h - for input and output
-string.h - for string manipulation
-ctype.h - for character manipulation
-mymat.h - for the matrix functions (mymat.h is a header file that I created)
-*/
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include "mymat.h"
+#include <stdio.h> /* fpr input and output */
+#include <string.h> /* for string manipulation */
+#include <ctype.h> /* for character manipulation */
+#include <stdlib.h> /* for atof */
+#include "mymat.h" /* for the matrix functions (mymat.h is a header file that I created) */
 
-// A struct that maps between a matrix name and a pointer to the matrix
+/* A struct that maps between a matrix name and a pointer to the matrix */
 typedef struct {
     char* matrixName;
     mat* matrix;
 } MatrixMap;
 
-/*
-All handling commands functions - all the functions get a pointer to the lookup table:
-handleReadMat - handles the read_mat command
-handlePrintMat - handles the print_mat command
-handleAddMat - handles the add_mat command
-handleSubMat - handles the sub_mat command
-handleMulMat - handles the mul_mat command
-handleMulScalar - handles the mul_scalar command
-handleTransMat - handles the trans_mat command
-*/
-void handleReadMat(MatrixMap* matrixMap);
-void handlePrintMat(MatrixMap* matrixMap);
-void handleAddMat(MatrixMap* matrixMap);
-void handleSubMat(MatrixMap* matrixMap);
-void handleMulMat(MatrixMap* matrixMap);
-void handleMulScalar(MatrixMap* matrixMap);
-void handleTransMat(MatrixMap* matrixMap);
-int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix);
-int inputReadMat(char *matrixName, float *numList);
-void updatePlacementOfCommas(int *placementOfCommas);
-void cleanBuffer();
+int getWords(char *input, char *command, int startingIndex, char stopChar); /* gets the command name from the input */
+void handleReadMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the read_mat command */
+void handlePrintMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the print_mat command */
+void handleAddMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the add_mat command */
+void handleSubMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the sub_mat command */
+void handleMulMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the mul_mat command */
+void handleMulScalar(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the mul_scalar command */
+void handleTransMat(MatrixMap* matrixMap, char *input, int startingIndex); /* handles the trans_mat command*/
+void cleanBuffer(); /* clears the buffer */
+void getLine(char *str); /* gets a line from the input */
 
-// The size of the matrix name (mat_{A-F})
-#define SIZE_OF_MATRIX_NAME 6
-#define AMOUNT_OF_NUMBERS 16
-#define FALSE 0 
-#define TRUE 1
+#define SIZE_OF_MATRIX_NAME 6 /* the size of the matrix name (mat_A-F) */
+#define AMOUNT_OF_NUMBERS 16 /* the amount of numbers in a matrix - for read_mat */
+#define FALSE 0 /* a flag that indicates false */
+#define TRUE 1 /* a flag that indicates true */
 
-// The main function - initializes all the matrices to zero and gets the command from the user
+/* The main function - initializes all the matrices to zero and gets the command from the user */
 int main()
 {
     // Create all the matrices using the "mat" struct created in mymat.h
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F;
+    char input[] = "";
+    char command[11] = "";
+    int startingIndex = 0;
 
     // Create a lookup table for the matrices - using the MatrixMap struct
     MatrixMap matrixMap[] ={
@@ -77,36 +61,36 @@ int main()
     // Get the command from the user and call the right function while the command is not "stop"
     do {
         // A string that holds the command - 11 is the maximum length of a command ()
-        char command[9];
-        scanf(" %s", command);
+        getLine(input);
+        startingIndex = getWords(input, command, 0, 'N');
 
         if(strcmp(command, "read_mat") == 0)
         {
-            handleReadMat(matrixMap);
+            handleReadMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "print_mat") == 0)
         {
-            handlePrintMat(matrixMap);
+            handlePrintMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "add_mat") == 0)
         {
-            handleAddMat(matrixMap);
+            handleAddMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "sub_mat") == 0)
         {
-            handleSubMat(matrixMap);
+            handleSubMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "mul_mat") == 0)
         {
-            handleMulMat(matrixMap);
+            handleMulMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "mul_scalar") == 0)
         {
-            handleMulScalar(matrixMap);
+            handleMulScalar(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "trans_mat") == 0)
         {
-            handleTransMat(matrixMap);
+            handleTransMat(matrixMap, input, startingIndex);
         }
         else if(strcmp(command, "stop") == 0)
         {
@@ -125,7 +109,42 @@ int main()
     return 0;
 }
 
-void handleReadMat(MatrixMap* matrixMap)
+int getWords(char *input, char *command, int startingIndex, char stopChar)
+{
+    int i = 0;
+
+    // run on all the characters of the input
+    while(startingIndex < strlen(input) && (input[startingIndex] == ' ' || input[startingIndex] == '\t'))
+    {
+        startingIndex++;
+    }
+
+    // run on all the characters of the input and save the command name
+    for(i = startingIndex; i < strlen(input); i++)
+    {
+        if(stopChar != 'N')
+        {
+            if(input[i] == stopChar)
+            {
+                break;
+            }
+        }
+        else
+        {
+            if(input[i] == ' ' || input[i] == '\t' || input[i] == '\0' || input[i] == '\n')
+            {
+                break;
+            }
+        }
+        command[i-startingIndex] = input[i];
+    }
+    command[i-startingIndex] = '\0';
+
+    return i;
+}
+
+/* A function that handles the read_mat command */
+void handleReadMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // read_mat <matrix> <16 numbers>
     /*
@@ -136,31 +155,40 @@ void handleReadMat(MatrixMap* matrixMap)
     allNumbersAreValid is a flag that indicates if all the numbers are valid
     */
     float numList[AMOUNT_OF_NUMBERS] = {0};
-    char matrixName[SIZE_OF_MATRIX_NAME] = "";
+    char matrixName[SIZE_OF_MATRIX_NAME] = "", number[24] = "";
     mat *matrix = NULL;
     int i;
     char c;
 
-    if(inputReadMat(matrixName, numList) == FALSE)
+    startingIndex = getWords(input, matrixName, startingIndex, ',');
+    for(i = 0; i < AMOUNT_OF_NUMBERS-1; i++)
     {
-        return;
+        startingIndex = getWords(input, number, startingIndex+1, ',');
+        numList[i] = atof(number);
     }
+    startingIndex = getWords(input, number, startingIndex+1, 'N');
+    numList[AMOUNT_OF_NUMBERS-1] = atof(number);
 
-    // Find the matrix in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
         {
             matrix = matrixMap[i].matrix;
-            break;
         }
+    }
+
+    if(matrix == NULL)
+    {
+        printf("Undefined matrix name\n");
+        return;
     }
 
     // call read_mat(mat*, float[16])
     read_mat(matrix, numList);
 }
 
-void handlePrintMat(MatrixMap* matrixMap)
+/* A function that handles the print_mat command */
+void handlePrintMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // print_mat <matrix>
     // Initialize all needed variables, matrixName is the name of the matrix, matrix is the pointer to the matrix
@@ -168,7 +196,7 @@ void handlePrintMat(MatrixMap* matrixMap)
     mat *matrix = NULL;
 
     // get the matrix (every matrix name is mat_{A-F})
-    scanf("%s", matrixName);
+    getWords(input, matrixName, startingIndex, 'N');
 
     // find the matrix in the lookup table
     int i;
@@ -190,7 +218,8 @@ void handlePrintMat(MatrixMap* matrixMap)
     print_mat(matrix);
 }
 
-void handleAddMat(MatrixMap* matrixMap)
+/* A function that handles the add_mat command */
+void handleAddMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     /*
     Initialize all needed variables:
@@ -201,15 +230,13 @@ void handleAddMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
+    char firstMatrix[SIZE_OF_MATRIX_NAME] = "", secondMatrix[SIZE_OF_MATRIX_NAME] = "", resMatrix[SIZE_OF_MATRIX_NAME] = "";
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i, j;
+    int i = 0, j = 0;
 
-    // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) == FALSE)
-    {
-        return;
-    }
+    startingIndex = getWords(input, firstMatrix, startingIndex, ',');
+    startingIndex = getWords(input, secondMatrix, startingIndex+1, ',');
+    startingIndex = getWords(input, resMatrix, startingIndex+1, 'N');
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -238,7 +265,8 @@ void handleAddMat(MatrixMap* matrixMap)
     add_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleSubMat(MatrixMap* matrixMap)
+/* A function that handles the sub_mat command */
+void handleSubMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // sub_mat <matrix> <matrix> <result matrix>
     /*
@@ -250,15 +278,13 @@ void handleSubMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME], matrices[SIZE_OF_MATRIX_NAME*3 + 2];
+    char firstMatrix[SIZE_OF_MATRIX_NAME] = "", secondMatrix[SIZE_OF_MATRIX_NAME] = "", resMatrix[SIZE_OF_MATRIX_NAME] = "";
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
-    int i, j;
+    int i = 0, j = 0;
 
-    // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) == FALSE)
-    {
-        return;
-    }
+    startingIndex = getWords(input, firstMatrix, startingIndex, ',');
+    startingIndex = getWords(input, secondMatrix, startingIndex+1, ',');
+    startingIndex = getWords(input, resMatrix, startingIndex+1, 'N');
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -287,7 +313,8 @@ void handleSubMat(MatrixMap* matrixMap)
     sub_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleMulMat(MatrixMap* matrixMap)
+/* A function that handles the mul_mat command */
+void handleMulMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // mul_mat <matrix> <matrix> <result matrix>
     /*
@@ -299,17 +326,15 @@ void handleMulMat(MatrixMap* matrixMap)
     secondMatPointer is the pointer to the second matrix
     resMatPointer is the pointer to the result matrix
     */
-    char firstMatrix[SIZE_OF_MATRIX_NAME], secondMatrix[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char firstMatrix[SIZE_OF_MATRIX_NAME] = "", secondMatrix[SIZE_OF_MATRIX_NAME] = "", resMatrix[SIZE_OF_MATRIX_NAME] = "";
     mat *firstMatPointer = NULL, *secondMatPointer = NULL, *resMatPointer = NULL;
+    int i = 0, j = 0;
 
-    // get the matrices into matrices (every matrix name is mat_{A-F})
-    if(updateAllMatrices(firstMatrix, secondMatrix, resMatrix) == FALSE)
-    {
-        return;
-    }
+    startingIndex = getWords(input, firstMatrix, startingIndex, ',');
+    startingIndex = getWords(input, secondMatrix, startingIndex+1, ',');
+    startingIndex = getWords(input, resMatrix, startingIndex+1, 'N');
 
     // find all the matrices in the lookup table
-    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(firstMatrix, matrixMap[i].matrixName) == 0)
@@ -336,7 +361,8 @@ void handleMulMat(MatrixMap* matrixMap)
     mul_mat(firstMatPointer, secondMatPointer, resMatPointer);
 }
 
-void handleMulScalar(MatrixMap* matrixMap)
+/* A function that handles the mul_scalar command */
+void handleMulScalar(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // mul_scalar <matrix> <scalar> <result matrix>
     /*
@@ -347,28 +373,17 @@ void handleMulScalar(MatrixMap* matrixMap)
     matPointer is the pointer to the matrix
     resMatPointer is the pointer to the result matrix
     */
-    char matrixName[SIZE_OF_MATRIX_NAME], resMatrix[SIZE_OF_MATRIX_NAME];
+    char matrixName[SIZE_OF_MATRIX_NAME] = "", resMatrix[SIZE_OF_MATRIX_NAME] = "", scalarString[24] = "";
     float scalar;
     mat *matPointer = NULL, *resMatPointer = NULL;
+    int i;
 
-    // get the matrix name
-    scanf(" %[^,]", matrixName);
-
-    // make sure the scalar is a real number
-    if(scanf(", %f", &scalar) != 1)
-    {
-        printf("Argument is not a real number\n");
-        
-        cleanBuffer();
-
-        return;
-    }
-
-    // get the result matrix name
-    scanf(", %s", resMatrix);
+    startingIndex = getWords(input, matrixName, startingIndex, ',');
+    startingIndex = getWords(input, scalarString, startingIndex+1, ',');
+    scalar = atof(scalarString);
+    startingIndex = getWords(input, resMatrix, startingIndex+1, 'N');
 
     // find all the matrices in the lookup table
-    int i;
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
     {
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0)
@@ -390,7 +405,8 @@ void handleMulScalar(MatrixMap* matrixMap)
     mul_scalar(matPointer, scalar, resMatPointer);
 }
 
-void handleTransMat(MatrixMap* matrixMap)
+/* A function that handles the trans_mat command */
+void handleTransMat(MatrixMap* matrixMap, char *input, int startingIndex)
 {
     // trans_mat <matrix> <result matrix>
     /*
@@ -407,8 +423,8 @@ void handleTransMat(MatrixMap* matrixMap)
 
     read_mat(&tempMatrix, numbers);
 
-    // get the matrix name
-    scanf(" %[^,], %s", matrixName, resMatrix);
+    startingIndex = getWords(input, matrixName, startingIndex, ',');
+    startingIndex = getWords(input, resMatrix, startingIndex+1, 'N');
 
     // find all the matrices in the lookup table
     for(i = 0; i < SIZE_OF_MATRIX_NAME; i++)
@@ -432,386 +448,18 @@ void handleTransMat(MatrixMap* matrixMap)
     trans_mat(matPointer, resMatPointer, &tempMatrix);
 }
 
-int updateAllMatrices(char *firstMatrix, char *secondMatrix, char *resMatrix)
-{
-    /*
-    Initialize all needed variables:
-    matrices is a string that holds all the input not including the command
-    i and j are counters
-    placementOfFirstComma is the index of the first comma - at the base case it is 5 (Exmaple: add_mat MAT_A, MAT_B, MAT_C)
-    placementOfSecondComma is the index of the second comma
-    placementOfCommandEnd is the index of the end of the command
-    startOfThirdMatrixName is the index of the start of the third matrix name
-    hasSeenFirstComma is a flag that indicates if the first comma was seen
-    hasSeenSecondComma is a flag that indicates if the second comma was seen
-    isInThirdMatrixName is a flag that indicates if the third matrix name is being read
-    hasSeenEndOfCommand is a flag that indicates if the end of the command was seen
-    */
-    char matrices[SIZE_OF_MATRIX_NAME*10];
-    int i, j;
-    int placementOfFirstComma = 5, placementOfSecondComma = 0, placementOfCommandEnd = 0, startOfThirdMatrixName = 0;
-    int hasSeenFirstComma = FALSE, hasSeenSecondComma = FALSE, isInThirdMatrixName = FALSE, hasSeenEndOfCommand = FALSE;
-
-    // get the entire input into matrices
-    scanf("%[^\n]", matrices);
-
-    // run on all the input and find the first comma, the second comma and the end of the command
-    for(i = 0; i < strlen(matrices) && matrices[i] != '\0'; i++)
-    {
-        // if the current character is not a whitespace and we have already seen the end of the command - print an error and return
-        if(matrices[i] != ' ' && matrices[i] != '\t' && hasSeenEndOfCommand == TRUE)
-        {
-            // if there are extraneous text after the end of the command - print an error and return
-            printf("Extraneous text after end of command\n");
-
-            // clear the buffer
-            cleanBuffer();
-
-            // return false (the command is not valid)
-            return FALSE;
-        }
-
-        // Check if we are in the end of the command
-        if(i == placementOfCommandEnd && placementOfCommandEnd != 0)
-        {
-            hasSeenEndOfCommand = TRUE; // update the flag that indicates that we have seen the end of the command
-        }
-
-        // if we are in the start of the third matrix name
-        if(hasSeenFirstComma == TRUE && hasSeenSecondComma == TRUE && isInThirdMatrixName != TRUE && matrices[i] == 'M')
-        {
-            // set the flag to true and save the index of the start of and the end of the third matrix name
-            isInThirdMatrixName = TRUE;
-            startOfThirdMatrixName = i; // save the index of the start of the third matrix name
-            placementOfCommandEnd = i + 4; // the length of the third matrix name is 5 so the end of the command is the index of the start of the third matrix name + 4
-        }
-
-        // if the current character is a whitespace and we haven't seen the first comma yet - update the index of the first comma
-        if((matrices[i] == ' ' || matrices[i] == '\t') && hasSeenFirstComma == FALSE)
-        {
-            placementOfFirstComma += 1; // update the index of the first comma
-        }
-        // if the current character is a whitespace and we have seen the first comma but not the second comma - update the index of the second comma
-        else if((matrices[i] == ' ' || matrices[i] == '\t') && hasSeenFirstComma == TRUE && hasSeenSecondComma == FALSE)
-        {
-            placementOfSecondComma += 1; // update the index of the second comma
-        }
-
-        // if the current character is a comma
-        if(matrices[i] == ',')
-        {
-            // if the character before or after the comma is a comma - print an error and return
-            if(matrices[i-1] == ',' || matrices[i+1] == ',')
-            {
-                // if the comma is in a place that should have a comma - print an error of multiple consecutive commas
-                if(i == placementOfFirstComma || i == placementOfSecondComma)
-                {
-                    printf("Multiple consecutive commas\n"); // print an error of multiple consecutive commas
-                }
-                // if the comma is in a place that should not have a comma - print an error of illegal comma
-                else
-                {
-                    printf("Illegal comma\n"); // print an error of illegal comma
-                }
-
-                // clear the buffer
-                cleanBuffer();
-
-                // return false (the command is not valid)
-                return FALSE;
-            }
-
-            // if we are at the index of the first comma - save the first matrix name
-            if(i == placementOfFirstComma)
-            {
-                // run on all the characters of the first matrix name and save them in firstMatrix
-                // SIZE_OF_MATRIX_NAME-1 because the last character is the comma
-                for(j = 0; j < SIZE_OF_MATRIX_NAME-1; j++)
-                {
-                    // save the character in firstMatrix - the index of the character is the index of the comma + the index of the character in the matrix name - 5
-                    *(firstMatrix+j) = matrices[j+placementOfFirstComma-5];
-                }
-                // add the null terminator to the end of the string
-                *(firstMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
-                // set the flag that indicates that we have seen the first comma to true
-                hasSeenFirstComma = TRUE;
-                // update the index of the second comma - the index of the first comma + 6 (at the base case the index of the second comma is the index of the first comma + 6)
-                placementOfSecondComma = placementOfFirstComma+6;
-            }
-            // if we are at the index of the second comma - save the second matrix name
-            else if(i == placementOfSecondComma)
-            {
-                // run on all the characters of the second matrix name and save them in secondMatrix
-                // SIZE_OF_MATRIX_NAME-1 because the last character is the comma
-                for(j = 0; j < SIZE_OF_MATRIX_NAME-1; j++)
-                {
-                    // save the character in secondMatrix - the index of the character is the index of the comma + the index of the character in the matrix name - 5
-                    *(secondMatrix+j) = matrices[j+placementOfSecondComma-5];
-                }
-                // add the null terminator to the end of the string
-                *(secondMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
-                // set the flag that indicates that we have seen the second comma to true
-                hasSeenSecondComma = TRUE;
-                // update the index of the end of the command - the index of the second comma + 6 (at the base case the index of the end of the command is the index of the second comma + 6)
-                placementOfCommandEnd = placementOfSecondComma+6;
-            }
-            else
-            {
-                // if there is a comma in a place that should not have a comma - print an error of "Illegal comma" and return
-                printf("Illegal comma\n");
-
-                // clear the buffer
-                cleanBuffer();
-
-                // return false (the command is not valid)
-                return FALSE;
-            }
-        }
-    }
-
-    // make sure we got all the matrices - all the flags should be true
-    if(hasSeenFirstComma == FALSE || hasSeenSecondComma == FALSE || isInThirdMatrixName == FALSE)
-    {
-        // if we are missing an argument - print an error and return
-        printf("Missing argument\n");
-
-        cleanBuffer();
-
-        return FALSE; // return false (the command is not valid)
-    }
-
-    // run on all the characters of the third matrix name and save them in resMatrix
-    // placementOfCommandEnd - startOfThirdMatrixName + 1 because the length of the third matrix name is placementOfCommandEnd - startOfThirdMatrixName + 1 (5)
-    for(j = 0; j < placementOfCommandEnd - startOfThirdMatrixName + 1; j++ && isInThirdMatrixName)
-    {
-        // save the character in resMatrix - the index of the character is the index of the start of the third matrix name + the index of the character in the matrix name - 5  
-        *(resMatrix+j) = matrices[j+startOfThirdMatrixName];
-    }
-    // add the null terminator to the end of the string
-    *(resMatrix+SIZE_OF_MATRIX_NAME-1) = '\0';
-
-    // If there weren't commas between the matrix names - print an error and return
-    if(matrices[placementOfFirstComma] != ',' || matrices[placementOfSecondComma] != ',')
-    {
-        printf("Missing comma\n"); // print an error of missing comma
-
-        cleanBuffer(); // clear the buffer
-
-        return FALSE; // return false (the command is not valid)
-    }
-
-    return TRUE; // return true (the command is valid)
-}
-
-int inputReadMat(char *matrixName, float *numList)
-{
-    /*
-    Initialize all needed variables:
-    input is the entire input
-    i, j, k are counters
-    placementOfCommas is an array that holds the index of the placement of the commas
-    startOfLastNum is the index of the start of the last number
-    endOfLastNum is the index of the end of the last number
-    hasSeenCommas is a flag array that indicates if we have seen each of the commas
-    hasSeenEndOfCommand is a flag that indicates if we have seen the end of the command
-    inputLength is the length of the input
-    */
-    char input[350];
-    int i, j, k, placementOfCommas[AMOUNT_OF_NUMBERS] = {0}, startOfLastNum = 0, endOfLastNum = 0, hasSeenCommas[AMOUNT_OF_NUMBERS] = {FALSE}, hasSeenEndOfCommand = FALSE, inputLength = 0;
-
-    // Get the entire input into input
-    scanf("%[^\n]", input);
-    inputLength = strlen(input); // save the length of the input
-    input[inputLength] = '\0'; // add the null terminator to the end of the string
-
-    placementOfCommas[0] = 5; // at the base casethe index of the first comma is 5 (not including the first space)
-    for(i = 0; i < inputLength && input[i] != '\0'; i++)
-    { 
-        // Check a place that should have a number has a letter - print error of "Argument is not a real number" and return
-        if(isalpha(input[i]) && hasSeenCommas[0] == TRUE)
-        {
-            printf("Argument is not a real number\n"); // print the error
-
-            cleanBuffer(); // clear the buffer
-
-            return FALSE; // return false (the command is not valid)
-        }
-
-        // Update the placement of the commas
-        // If the current character is a whitespace or a digit and the next character is not a comma or the end of the string (the number is longer than 1 digit) - update the placement of the commas (the index of the placement of the commas + 1
-        if(input[i] == ' ' || input[i] == '\t' || (isdigit(input[i]) && (input[i+1] != ',' && input[i+1] != '\0')))
-        {
-            // Find the index of the comma we still haven't seen
-            for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
-            {
-                // If we haven't seen the comma - we are searching for the index of the comma
-                if(hasSeenCommas[j] == FALSE)
-                {
-                    placementOfCommas[j] += 1; // Change the index of the comma
-                    break; // Break the loop - so we won't change other indexes
-                }
-            }
-        }
-
-        // If the current character is a comma - start the process of saving the matrix name and the numbers
-        if(input[i] == ',')
-        {
-            // If the character after the comma is a comma - print an error and return
-            if(input[i+1] == ',')
-            {
-                // Check if there should be a comma in the place of the current comma - if so print an error of multiple consecutive commas
-                for(j = 0; j < AMOUNT_OF_NUMBERS; j++)
-                {
-                    // There should be a comma in the place of the current comma
-                    if(i == placementOfCommas[i])
-                    {
-                        printf("Multiple consecutive commas\n"); // print an error of multiple consecutive commas
-                        break; // break the loop
-                    }
-                    else
-                    {
-                        printf("Illegal comma\n"); // print an error of illegal comma
-                        break; // break the loop
-                    }
-                }
-
-                cleanBuffer(); // clear the buffer
-
-                return FALSE; // return false (the command is not valid)
-            }
-
-            // A loop to find the index of the comma we are currently at (the index not in input but in placementOfCommas)
-            for(k = 0; k < AMOUNT_OF_NUMBERS; k++)
-            {
-                // If we have already seen the comma - continue to the next index
-                if(hasSeenCommas[j] == TRUE)
-                {
-                    j++;
-                }
-                else
-                {
-                    break; // break out - we found the placement of the current comma in placementOfCommas
-                }
-            }
-
-            // A loop to update the matrix name and the numbers
-            for(; j < AMOUNT_OF_NUMBERS; j++)
-            {
-                // If we are at the first comma - save the matrix name
-                if(i == placementOfCommas[j] && j == 0)
-                {
-                    // A loop to save the matrix name
-                    for(k = 0; k < SIZE_OF_MATRIX_NAME-1; k++)
-                    {
-                        *(matrixName+k) = input[k + placementOfCommas[0]-5]; // 5 - the length of each matrix name
-                    }
-                    *(matrixName+SIZE_OF_MATRIX_NAME-1) = '\0'; // add the null terminator to the end of the string
-                    hasSeenCommas[0] = TRUE; // update the flag that indicates that we have seen the first comma
-                    placementOfCommas[1] = placementOfCommas[0] + 2; // update the index of the second comma, +2 because at the base case the index of the second comma is the index of the first comma + 2 (and all the other indexes are updated in the same way)
-                    break; // break the loop
-                }
-                // If we are at a number comma - save the number
-                else if(i == placementOfCommas[j])
-                {
-                    int startIndexOfNum = 0; // Find the start of the number
-                    for(startIndexOfNum = i-1; startIndexOfNum > i-9; startIndexOfNum--)
-                    {
-                        if((input[startIndexOfNum] == ' ' || input[startIndexOfNum] == '\t') && isdigit(input[startIndexOfNum+1])) // If the character is a whitespace and the next character is a digit - we found the start of the number
-                        {
-                            startIndexOfNum++; // Increment the index of the start of the number - because the current character is a whitespace
-                            break; // break the loop
-                        }
-                    }
-                    char substring[i - startIndexOfNum + 1]; // Create a substring to save the number into, i - startIndexOfNum + 1 is the length of the substring because the length of the number is i - startIndexOfNum and we need to add 1 for the null terminator
-                    
-                    // A loop to save the number
-                    for(k = startIndexOfNum; k < i + 1; k++)
-                    {
-                        substring[k-startIndexOfNum] = input[k]; // Saving each digit of the number into the substring
-                    }
-
-                    substring[strlen(substring)] = '\0'; // add the null terminator to the end of the string
-
-                    *(numList+j-1) = atof(substring); // save the number into the numList array - atof is a function that converts a string to a float
-                    hasSeenCommas[j] = TRUE; // update the flag that indicates that we have seen the current comma
-                    placementOfCommas[j+1] = placementOfCommas[j] + 2; // update the index of the next comma
-                    break; // break the loop
-                }
-                // If there is a comma in a place that should not have a comma - print an error and return
-                else
-                {
-                    printf("Illegal comma\n"); // print an error of illegal comma
-
-                    cleanBuffer(); // clear the buffer
-
-                    return FALSE; // return false (the command is not valid)
-                }
-            }
-        }
-    }
-
-    // Find the start of the last number
-    for(j = i; j > 0; j--)
-    {
-        // If the current character is a digit and the previous character is a whitespace - we found the start of the last number
-        if(isdigit(input[j]) && (input[j-1] == ' ' || input[j-1] == '\t'))
-        {
-            startOfLastNum = j; // save the index of the start of the last number
-            break; // break the loop
-        }
-    }
-
-    // A loop to find the end of the last number
-    for(i = startOfLastNum; i < inputLength && (input[i] != '\0' || input[i] != '\n'); i++)
-    {
-        // If the current character is a digit and the next character is a whitespace - we found the end of the last number or the end of the string
-        if(isdigit(input[i]) && (input[i+1] == ' ' || input[i+1] == '\t' || input[i+1] == '\0'))
-        {
-            endOfLastNum = i; // save the index of the end of the last number
-            break; // break the loop
-        }
-    }
-
-    char substring[endOfLastNum - startOfLastNum + 1]; // Create a substring to save the number into, endOfLastNum - startOfLastNum + 1 is the length of the substring because the length of the number is endOfLastNum - startOfLastNum and we need to add 1 for the null terminator
-
-    // A loop to save the last number
-    for(i = startOfLastNum; i < endOfLastNum + 1; i++)
-    {
-        substring[i-startOfLastNum] = input[i]; // Saving each digit of the number into the substring
-    }
-    substring[strlen(substring)] = '\0'; // add the null terminator to the end of the string
-
-    // Find where the last number should be placed
-    for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
-    {
-        // If there is somewhere we haven't placed a number yet - place the last number there
-        if(hasSeenCommas[i] == FALSE)
-        {
-            *(numList+i-1) = atof(substring);
-            break;
-        }
-        // If we are at the last number and we have placed all the numbers - place the last number in the last place
-        if(i == AMOUNT_OF_NUMBERS-1)
-        {
-            *(numList+AMOUNT_OF_NUMBERS-1) = atof(substring);
-            break;
-        }
-    }
-
-    // If we haven't seen the first comma - there isn't the matrix name - print an error and return, if we haven't seen the second comma - there aren't enough numbers - print an error and return
-    if(hasSeenCommas[0] == FALSE || hasSeenCommas[1] == FALSE)
-    {
-        printf("Missing argument\n"); // print an error of missing argument
-
-        cleanBuffer(); // clear the buffer
-
-        return FALSE; // return false (the command is not valid)
-    }
-}
-
+/* A function that clears the buffer */
 void cleanBuffer()
 {
     while(getchar() != '\n'); // clear the buffer
+}
+
+void getLine(char *str)
+{
+    while((*str = getchar()) != EOF && *str != '\n')
+    {
+        str++;
+    }
 }
 
 //gcc mainmat.c mymat.c -o mainmat

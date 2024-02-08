@@ -1,11 +1,9 @@
-✔ Add comma handling in all functions @done (1/28/2024, 5:16:48 PM)
-☐ Missing comma error - mul_scalar, trans_mat
-☐ Extraneous text after end of command error - mul_scalar, trans_mat
-☐ Missing argument error - mul_scalar, trans_mat
-☐ Multiple consecutive commas error - mul_scalar, trans_mat
-✔ Argument is not a scalar error @done (1/28/2024, 11:01:39 PM)
-☐ Illegal comma error - mul_scalar, trans_mat
+☐ Missing comma error
+☐ Extraneous text after end of command error
+☐ Missing argument error
+☐ Multiple consecutive commas error
+☐ Argument is not a scalar error
+☐ Illegal comma error
 ☐ Break main function into smaller functions
-☐ Make everything work with tabs and spaces - mul_scalar, trans_mat
 ☐ Make sure there aren't any magic numbers
 ☐ Add comments to all functions
