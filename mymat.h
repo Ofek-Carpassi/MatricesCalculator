@@ -1,4 +1,4 @@
-// Defenition of the typedef mat, all the declarations of the functions in mymat.c
+/* Defenition of the typedef mat, all the declarations of the functions in mymat.c */
 
 #ifndef MYMAT_H
 #define MYMAT_H

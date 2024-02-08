@@ -1,11 +1,11 @@
-// All arithmetic functions for the matices.
+/* All arithmetic functions for the matices. */
 
 #include <stdio.h>
 #include "mymat.h"
 
 #define LENGTH_OF_MATRIX_LINE 4
 
-// read_mat - gets an array of 16 floats and a matrix, and puts the floats in the matrix
+/* read_mat - gets an array of 16 floats and a matrix, and puts the floats in the matrix */
 void read_mat(mat* matrix, float list[16])
 {   
     int i, j;
@@ -18,7 +18,7 @@ void read_mat(mat* matrix, float list[16])
     }
 }
 
-// print_mat - prints a given matrix
+/* print_mat - prints a given matrix */
 void print_mat(mat* matrix)
 {
     int i, j;
@@ -32,7 +32,7 @@ void print_mat(mat* matrix)
     }
 }
 
-// add_mat - gets two matrices and adds them
+/* add_mat - gets two matrices and adds them */
 void add_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
 {
     int i, j;
@@ -46,7 +46,7 @@ void add_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
     }
 }
 
-// sub_mat - gets two matrices and substracts them from each other
+/* sub_mat - gets two matrices and substracts them from each other */
 void sub_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
 {
     int i, j;
@@ -60,7 +60,7 @@ void sub_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
     }
 }
 
-// mul_mat - multiplys two matrices
+/* mul_mat - multiplys two matrices */
 void mul_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
 {
     int i, j;
@@ -74,7 +74,7 @@ void mul_mat(mat* firstMatrix, mat* secondMatrix, mat* resultMatrix)
     }
 }
 
-// mul_scalar - multiplys a matrix by a scalar
+/* mul_scalar - multiplys a matrix by a scalar */
 void mul_scalar(mat* matrix, float scalar, mat* resultMatrix)
 {
     int i, j;
@@ -88,7 +88,7 @@ void mul_scalar(mat* matrix, float scalar, mat* resultMatrix)
     }
 }
 
-// trans_mat - transpose a matrix
+/* trans_mat - transpose a matrix */
 void trans_mat(mat* matrix, mat* resultMatrix, mat* tempMatrix)
 {
     int i, j;
