@@ -162,12 +162,12 @@ void handleReadMat(MatrixMap* matrixMap, char *input, int startingIndex)
     float numList[AMOUNT_OF_NUMBERS] = {0};
     char matrixName[SIZE_OF_MATRIX_NAME] = "", number[MAX_FLOAT_LENGTH] = "";
     mat *matrix = NULL;
-    int i;
+    int i = 0;
 
-    startingIndex = getWords(input, matrixName, startingIndex, ','); /* get the matrix name - after the matrix name there is a comma */
+    startingIndex = getWords(input, matrixName, startingIndex, ',') +1; /* get the matrix name - after the matrix name there is a comma */
     for(i = 0; i < strlen(input) - startingIndex - 1; i++) /* run on all the numbers but the last one */
     {
-        startingIndex = getWords(input, number, startingIndex+1, ','); /* get the number - after the number there is a comma */
+        startingIndex = getWords(input, number, startingIndex, ','); /* get the number - after the number there is a comma */
         numList[i] = atof(number); /* transform the number from a string to a float */
     }
     startingIndex = getWords(input, number, startingIndex+1, NO_STOP_CHAR); /* get the last number - after the last number there is no comma */
@@ -178,7 +178,6 @@ void handleReadMat(MatrixMap* matrixMap, char *input, int startingIndex)
         if(strcmp(matrixName, matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
         {
             matrix = matrixMap[i].matrix; /* save the pointer to the matrix */
-            break; /* break the loop */
         }
     }
 
