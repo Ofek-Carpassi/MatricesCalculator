@@ -41,16 +41,21 @@ int main()
     char input[] = "", command[MAX_COMMAND_LENGTH] = ""; /* The input from the user and the command */
     int startingIndex = 0; /* An index that indicates the starting index of the command */
     float numList[AMOUNT_OF_NUMBERS] = {0}; /* A number list of 0's for initializing the matrices */
+    MatrixMap matrixMap[6]; /* A lookup table for the matrices */
 
-    /* Create a lookup table for the matrices - using the MatrixMap struct */
-    MatrixMap matrixMap[] = {
-        {"MAT_A", &MAT_A},
-        {"MAT_B", &MAT_B},
-        {"MAT_C", &MAT_C},
-        {"MAT_D", &MAT_D},
-        {"MAT_E", &MAT_E},
-        {"MAT_F", &MAT_F}
-    };
+    /* Initialize the lookup table */
+    matrixMap[0].matrixName = "MAT_A"; /* the name of the matrix */
+    matrixMap[0].matrix = &MAT_A; /* the pointer to the matrix */
+    matrixMap[1].matrixName = "MAT_B"; /* the name of the matrix */
+    matrixMap[1].matrix = &MAT_B; /* the pointer to the matrix */
+    matrixMap[2].matrixName = "MAT_C"; /* the name of the matrix */
+    matrixMap[2].matrix = &MAT_C; /* the pointer to the matrix */
+    matrixMap[3].matrixName = "MAT_D"; /* the name of the matrix */
+    matrixMap[3].matrix = &MAT_D; /* the pointer to the matrix */
+    matrixMap[4].matrixName = "MAT_E"; /* the name of the matrix */
+    matrixMap[4].matrix = &MAT_E; /* the pointer to the matrix */
+    matrixMap[5].matrixName = "MAT_F"; /* the name of the matrix */
+    matrixMap[5].matrix = &MAT_F; /* the pointer to the matrix */
 
     /* Intialize all matrices to zero using an array of 16 zeros and the read_mat function */
     read_mat(&MAT_A, numList);
