@@ -105,7 +105,7 @@ int main()
         else /* if the command is not recognized */
         {
             printf("Undefined command name\n"); /* print an error message */
-            clearBuffer(); /* clear the buffer */
+            clearBuffer(); /* clear the b`uffer */
         }
 
     } while(TRUE);
@@ -129,7 +129,7 @@ int getWords(char *input, char *command, int startingIndex, char stopChar)
     {
         if(stopChar != NO_STOP_CHAR) /* if there is a stop character */
         {
-            if(input[i] == stopChar) /* if the character is the stop character */
+            if(input[i] == stopChar || input[i] == ' ' || input[i] == '\t' || input[i] == '\0' || input[i] == '\n') /* if the character is the stop character */
             {
                 break; /* break the loop */
             }
@@ -165,9 +165,9 @@ void handleReadMat(MatrixMap* matrixMap, char *input, int startingIndex)
     int i = 0;
 
     startingIndex = getWords(input, matrixName, startingIndex, ',') +1; /* get the matrix name - after the matrix name there is a comma */
-    for(i = 0; i < strlen(input) - startingIndex - 1; i++) /* run on all the numbers but the last one */
+    for(i = 0; i < 15; i++) /* run on all the numbers but the last one */
     {
-        startingIndex = getWords(input, number, startingIndex, ','); /* get the number - after the number there is a comma */
+        startingIndex = getWords(input, number, startingIndex, ',')+1; /* get the number - after the number there is a comma */
         numList[i] = atof(number); /* transform the number from a string to a float */
     }
     startingIndex = getWords(input, number, startingIndex+1, NO_STOP_CHAR); /* get the last number - after the last number there is no comma */
