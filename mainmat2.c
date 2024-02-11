@@ -6,14 +6,19 @@
 A blueprint for the program:
 main:
     - call getInput. DONE
+    - call getCommand.
     - call executeCommand.
 getInput:
     - get the input from the user. DONE
     - clean the input from spaces and tabs. DONE
     - check for errors in the input. DONE
-    - call getArguements. Finish by 11/3/2024
 getLine:
     - get the input from the user. DONE
+getCommand:
+    - gets the command from the input. Finish by 11/3/2024
+    - check if the command is valid (is in the list of commands). Finish by 11/3/2024
+    - remove the command from the input. Finish by 11/3/2024
+    - return a number that represents the command. Finish by 11/3/2024
 getArguements:
     - break the input into the command and the arguements. Finish by 11/3/2024
     - check if the command is valid (is in the list of commands). Finish by 11/3/2024
@@ -37,7 +42,7 @@ typedef struct {
 } MatrixMap;
 
 /* Declarations of the functions */
-void getInput(char* input);
+void getInput(char* input, char* clearInput);
 void getLine(char* input);
 void getArguements(char* input, char* command, char* args[]);
 void executeCommand(char* command, char* args[], MatrixMap* matrixMap);
@@ -60,7 +65,7 @@ void executeTransMat(char* args[], MatrixMap* matrixMap);
 int main()
 {
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F; /* Defining all the matrices */
-    char input[] = "";
+    char input[] = "", clearInput[MAX_LENGTH_OF_CLEAN_INPUT] = "";
     float numList[AMOUNT_OF_NUMBERS] = {0}; /* A number list of 0's for initializing the matrices */
     MatrixMap matrixMap[AMOUNT_OF_MATRICES]; /* A lookup table for the matrices */
 
@@ -89,13 +94,14 @@ int main()
     /* The main loop */
     while (TRUE)
     {
-        getInput(input); /* Get the input from the user */
+        getInput(input, clearInput); /* Get the input from the user */
+        printf("The input is: %s\n");
         break;
     }
 }
 
 /* The function that gets the input from the user */
-void getInput(char* input)
+void getInput(char* input, char* clearInput)
 {
     int i = 0, startingIndex = 0, j = 0, lastCommaIndex = 0, isWaitingForComma = FALSE, isInCommand = TRUE, isInEndOfCommand = FALSE, endOfCommandIndex = 0, endOfInputIndex = 0;
     
@@ -105,7 +111,6 @@ void getInput(char* input)
     /* The maximal input is a read mat with the 16 longest float number possible (read_mat,MAT_A,-3.40282e+38,-3.402828e+38,...,-3.40282e+38) - the length of the input will be 24+16*39 = 648 */
     /* The length of -3.40282e+38 is 39 in decimal and the amount of commas is 18, the amount of numbers is 16, the length of the command name and the matrix name is 24 */
     /* We will just put a \0 at the end of the string and the rest will be filled with spaces */
-    char clearInput[MAX_LENGTH_OF_CLEAN_INPUT] = "";
 
     for(i = strlen(input) - 1; i > 0; i--)
     {
@@ -131,9 +136,16 @@ void getInput(char* input)
             startingIndex = i;
             for(j = 0; input[j+startingIndex] != '\0' && input[j+startingIndex] != ' ' && input[j+startingIndex] != '\t'; j++)
             {
+                if(input[j+startingIndex] == ',' && input[j+startingIndex+1] != ' ' && input[j+startingIndex+1] != '\t' && input[j+startingIndex+1] != '\0' && input[j+startingIndex+1] != '\n')
+                {
+                    printf("Illegal comma\n");
+                    //clearInput = "";
+                    return;
+                }
                 clearInput[j+lastCommaIndex] = input[j+startingIndex];
             }
             endOfInputIndex = j+startingIndex;
+
             j--;
             while(input[j+startingIndex] == ' ' || input[j+startingIndex] == '\t')
             {
@@ -144,9 +156,9 @@ void getInput(char* input)
             lastCommaIndex += j+2;
 
             /* Check for extreneous text after the command */
-            for(j = endOfInputIndex; input[j] != '\0'; j++)
+            for(j = endOfInputIndex-1; input[j] != '\0'; j++)
             {
-                if(input[j+endOfCommandIndex] != ' ' && input[j+endOfCommandIndex] != '\t')
+                if(input[j] != ' ' && input[j] != '\t' && input[j] != '\n' && j != startingIndex)
                 {
                     printf("Extraneous text after the command\n");
                     return;
@@ -175,6 +187,12 @@ void getInput(char* input)
                 startingIndex = i;
                 for(j = 0; input[j+startingIndex] != '\0' && input[j+startingIndex] != ' '; j++)
                 {
+                    if(input[j+startingIndex] == ',')
+                    {
+                        printf("Illegal comma\n");
+                        //clearInput = "";
+                        return;
+                    }
                     clearInput[j] = input[j+startingIndex];
                 }
                 j--;
@@ -210,7 +228,6 @@ void getInput(char* input)
             return;
         }
     }
-    printf("%s\n", clearInput);
 }
 
 /* A function that gets a line from the input */
