@@ -418,6 +418,7 @@ void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap mat
 {
     /*  i, j - counters for several loops */
     int i = 0, j = 0;
+    float numList[AMOUNT_OF_NUMBERS] = {0}; /* A number list of 0's for initializing the matrices */
     
     for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
     {
@@ -451,4 +452,21 @@ void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap mat
         }
         arguments[i] = atof(stringArguments[i]); /* put the current argument in the arguments array */
     }
-}
+
+    for(i = 1; i < MAX_AMOUNT_OF_ARGUMENTS; i++) /* put the rest of the arguments in the numList array */
+    {
+        if(arguments[i] == -1) /* if the current argument is not a real number */
+        {
+            break; /* break the loop */
+        }
+        numList[i-1] = arguments[i];
+    }
+
+    read_mat(matrixMap[(int)arguments[0]].matrix, numList); /* call the read_mat function */
+    printf("NumList: \n");
+    for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
+    {
+        printf("%f\n", numList[i]);
+    }
+    print_mat(matrixMap[(int)arguments[0]].matrix); /* print the matrix */
+}  
