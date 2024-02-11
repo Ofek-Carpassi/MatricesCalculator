@@ -136,10 +136,17 @@ void getInput(char* input, char* clearInput)
             startingIndex = i;
             for(j = 0; input[j+startingIndex] != '\0' && input[j+startingIndex] != ' ' && input[j+startingIndex] != '\t'; j++)
             {
+<<<<<<< HEAD
                 if(input[j+startingIndex] == ',' && input[j+startingIndex+1] != ' ' && input[j+startingIndex+1] != '\t' && input[j+startingIndex+1] != '\0' && input[j+startingIndex+1] != '\n')
                 {
                     printf("Illegal comma\n");
                     //clearInput = "";
+=======
+                if(input[j+startingIndex] == ',')
+                {
+                    printf("Illegal comma\n");
+                    clearInput = "";
+>>>>>>> cd36ff82506013f2444c210d29c3143a678ef4dd
                     return;
                 }
                 clearInput[j+lastCommaIndex] = input[j+startingIndex];
@@ -190,7 +197,11 @@ void getInput(char* input, char* clearInput)
                     if(input[j+startingIndex] == ',')
                     {
                         printf("Illegal comma\n");
+<<<<<<< HEAD
                         //clearInput = "";
+=======
+                        clearInput = "";
+>>>>>>> cd36ff82506013f2444c210d29c3143a678ef4dd
                         return;
                     }
                     clearInput[j] = input[j+startingIndex];
