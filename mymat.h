@@ -5,6 +5,7 @@
 
 typedef struct mat {
     float data[4][4];
+    float extraMemory;
 } mat;
 
 void read_mat(mat* matrix, float list[16]);

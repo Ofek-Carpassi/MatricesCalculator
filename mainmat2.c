@@ -4,30 +4,6 @@
 
 /*
 A blueprint for the program:
-main:
-    - call getInput. DONE
-    - call parseCommand. DONE
-    - call parsearguments.
-    - call executeCommand.
-getInput:
-    - get the input from the user. DONE
-    - clean the input from spaces and tabs. DONE
-    - check for errors in the input. DONE
-getLine:
-    - get the input from the user. DONE
-parseCommand:
-    - gets the command from the input. DONE
-    - check if the command is valid (is in the list of commands). DONE
-    - remove the command from the input. DONE
-    - return a number that represents the command. DONE
-parseArguments:
-    - get the arguments from the input. DONE
-    - check if the arguments are valid for the command. Finish by 11/3/2024
-executeCommand:
-    - call the corresponding function for the command. Finish by 11/3/2024
-six command execution functions:
-    - check if the arguments are valid for the command. Finish by 11/3/2024
-    - each function will call the corresponding function from mymat.h. Finish by 11/3/2024
 */
 
 #include <stdio.h> /* fpr input and output */
@@ -43,11 +19,16 @@ typedef struct {
 } MatrixMap;
 
 /* Declarations of the functions */
-void getInput(char* input, char* clearInput); /* The function that gets the input from the user */
+void getInput(char* input, char* clearInput, char* commandsNames[]); /* A function that gets the input from the user and cleans it while checking for errors */
 void getLine(char* input); /* A function that gets a line from the input */
-int parseCommand(char* input, char* command, char* commands[]); /* A function that parses the command from the input */
-void parseArguments(char* input, int command, float arguments[], MatrixMap matrixMap[]); /* A function that parses the arguments from the input */
-void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap matrixMap[]); /* A function that breaks the input for the read_mat command */
+int parseCommand(char* input, char* command, char* commandsNames[]); /* A function that parses the command from the input */
+void parseArguments(char* input, int command, MatrixMap matrixMap[]); /* A function that parses the arguments from the input */
+void breakInputReadMat(char* stringArguments[], MatrixMap matrixMap[]); /* A function that breaks the input for the read_mat command */
+void breakInputPrintMat(char* stringArguments[], MatrixMap matrixMap[]); /* A function that breaks the input for the print_mat command */
+void breakInputThreeMat(char* stringArguments[], MatrixMap matrixMap[], int command); /* A function that breaks the input for the add_mat, sub_mat and mul_mat commandsNames */
+void breakInputMulScalar(char* stringArguments[], MatrixMap matrixMap[]); /* A function that breaks the input for the mul_scalar command */
+void breakInputTransMat(char* stringArguments[], MatrixMap matrixMap[]); /* A function that breaks the input */
+char *strdup(const char *src); /* A function that duplicates a string */
 
 /* Defining all needed constants */
 #define TRUE 1 /* A constant for true */
@@ -55,22 +36,28 @@ void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap mat
 #define AMOUNT_OF_NUMBERS 16 /* The amount of numbers in the input */
 #define AMOUNT_OF_MATRICES 6 /* The amount of matrices in the program */
 #define MAX_LENGTH_OF_CLEAN_INPUT 648 /* The maximal length of the input after cleaning. The maximal input is a read mat with the 16 longest float number possible (read_mat,MAT_A,-3.40282e+38,-3.402828e+38,...,-3.40282e+38) - the length of the input will be 24+16*39 = 648, The length of -3.40282e+38 is 39 in decimal and the amount of commas is 18, the amount of numbers is 16, the length of the command name and the matrix name is 24 */
-#define MAX_LENGTH_OF_COMMAND 9 /* The maximal length of the command */
+#define MAX_LENGTH_OF_COMMAND 11 /* The maximal length of the command */
 #define MAX_AMOUNT_OF_ARGUMENTS 17 /* The maximal amount of arguments in the input */
-#define AMOUNT_OF_COMMANDS 8 /* The amount of commands in the program */
-#define STOP_COMMAND_INDEX 7 /* The index of the stop command in the commands array */
+#define AMOUNT_OF_COMMANDS 8 /* The amount of commandsNames in the program */
+#define STOP_COMMAND_INDEX 7 /* The index of the stop command in the commandsNames array */
 #define MAX_ARG_LENGTH 39 /* The maximal length of an argument */
 
 /* The main function */
 int main()
 {
     mat MAT_A, MAT_B, MAT_C, MAT_D, MAT_E, MAT_F; /* Defining all the matrices */
-    char input[] = "", clearInput[MAX_LENGTH_OF_CLEAN_INPUT] = "", command[MAX_LENGTH_OF_COMMAND] = ""; /* The input from the user and the command */
-    char* commands[] = {"read_mat", "print_mat", "add_mat", "sub_mat", "mul_mat", "mul_scalar", "trans_mat", "stop"};
-    float arguments[MAX_AMOUNT_OF_ARGUMENTS] = {-1}; /* The arguments of the command */
+    char input[] = "", clearInput[MAX_LENGTH_OF_CLEAN_INPUT] = "", command[MAX_LENGTH_OF_COMMAND] = "", *commandsNames[] = {"read_mat", "print_mat", "add_mat", "sub_mat", "mul_mat", "mul_scalar", "trans_mat", "stop"};
     float numList[AMOUNT_OF_NUMBERS] = {0}; /* A number list of 0's for initializing the matrices */
     MatrixMap matrixMap[AMOUNT_OF_MATRICES]; /* A lookup table for the matrices */
-    int commandIndex = -1; /* The index of the command in the commands array */
+    int commandIndex = -1, i = 0; /* The index of the command in the commandsNames array */
+
+    /* Intialize all matrices to zero using an array of 16 zeros and the read_mat function */
+    read_mat(&MAT_A, numList);
+    read_mat(&MAT_B, numList);
+    read_mat(&MAT_C, numList);
+    read_mat(&MAT_D, numList);
+    read_mat(&MAT_E, numList);
+    read_mat(&MAT_F, numList);
 
     /* Initialize the lookup table */
     matrixMap[0].matrixName = "MAT_A"; /* the name of the matrix */
@@ -86,24 +73,25 @@ int main()
     matrixMap[5].matrixName = "MAT_F"; /* the name of the matrix */
     matrixMap[5].matrix = &MAT_F; /* the pointer to the matrix */
 
-    /* Intialize all matrices to zero using an array of 16 zeros and the read_mat function */
-    read_mat(&MAT_A, numList);
-    read_mat(&MAT_B, numList);
-    read_mat(&MAT_C, numList);
-    read_mat(&MAT_D, numList);
-    read_mat(&MAT_E, numList);
-    read_mat(&MAT_F, numList);
-
     /* The main loop */
     while (TRUE)
     {
-        getInput(input, clearInput); /* Get the input from the user */
+        print_mat(&MAT_F);
+        /* Make input and clearInput empty again. */
+        for(i = 0; i < strlen(input); i++)
+        {
+            input[i] = '\0';
+        }
+        for(i = 0; i < strlen(clearInput); i++)
+        {
+            clearInput[i] = '\0';
+        }
+        getInput(input, clearInput, commandsNames); /* Get the input from the user and clean it */
         if(clearInput[0] == '\0') /* If the input is invalid skip the rest of the loop */
         {
             continue;
         }
-
-        commandIndex = parseCommand(clearInput, command, commands); /* Parse the command from the input */
+        commandIndex = parseCommand(clearInput, command, commandsNames); /* Parse the command from the input */
         if(command[0] == '\0' || commandIndex == -1) /* If the command is invalid skip the rest of the loop */
         {
             continue;
@@ -112,13 +100,14 @@ int main()
         {
             break;
         }
-
-        parseArguments(clearInput, commandIndex, arguments, matrixMap); /* Parse the arguments from the input */
+        parseArguments(clearInput, commandIndex, matrixMap); /* Parse the arguments from the input */
     }
+
+    return 0; /* End the program */
 }
 
 /* The function that gets the input from the user and cleans it while checking for errors */
-void getInput(char* input, char* clearInput)
+void getInput(char* input, char* clearInput, char* commandsNames[])
 {
     /*
     Declarations:
@@ -127,13 +116,34 @@ void getInput(char* input, char* clearInput)
     lastCommaIndex - the index of the last comma in the clearInput array
     isWaitingForComma - a flag that tells us if we are waiting for a comma
     isInCommand - a flag that tells us if we are in the command (the first argument)
-    isInEndOfCommand - a flag that tells us if we are in the end of the command (the last argument)
     endOfCommandIndex - the index of the start of the last argument
     endOfInputIndex - the index of the end of the input
     */
-    int i = 0, j = 0, startingIndex = 0, lastCommaIndex = 0, isWaitingForComma = FALSE, isInCommand = TRUE, isInEndOfCommand = FALSE, endOfCommandIndex = 0, endOfInputIndex = 0;
+    int i = 0, j = 0, startingIndex = 0, lastCommaIndex = 0, isWaitingForComma = FALSE, isInCommand = TRUE, endOfCommandIndex = 0, endOfInputIndex = 0, isThereCommand = FALSE;
     
+    /*
+    read_mat MAT_A, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+    read_mat MAT_C, 100, 100, 100
+    read_mat MAT_A, 5, 5, 5
+    */
+
     getLine(input); /* Get the input from the user */
+
+    for(i = 0; i < AMOUNT_OF_COMMANDS; i++)
+    {
+        if(strstr(input, commandsNames[i]) != NULL)
+        {
+            isThereCommand = TRUE;
+            break;
+        }
+    }
+
+    if(isThereCommand == FALSE)
+    {
+        printf("Undefined command name\n");
+        clearInput[0] = '\0';
+        return;
+    }
 
     /* Find the end of the command */
     for(i = strlen(input) - 1; i > 0; i--)
@@ -157,6 +167,7 @@ void getInput(char* input, char* clearInput)
     /* Clean the input from spaces and tabs while checking for errors */
     for(i = 0; input[i] != '\0'; i++) /* Go through the input */
     { 
+
         /* If we got to the last argument we will get the last argument and break the loop */
         if(i == endOfCommandIndex)
         {
@@ -171,8 +182,6 @@ void getInput(char* input, char* clearInput)
             }
             /* We keep the index of the end of the last argument */
             endOfInputIndex = j+startingIndex;
-
-
             j--; /* Move the index to the end of the current argument */
             /* The loop is used to remove spaces and tabs from the end of the last argument in the clearInput array */
             while(input[j+startingIndex] == ' ' || input[j+startingIndex] == '\t')
@@ -186,8 +195,9 @@ void getInput(char* input, char* clearInput)
                 endOfInputIndex--;
             }
 
-            /* Put a comma at the end for all other commands (for easier parsing) */
+            /* Put a comma at the end for all other commandsNames (for easier parsing) */
             clearInput[j+lastCommaIndex+1] = ',';
+            clearInput[j+lastCommaIndex+2] = '\0';
 
             /* Check for extreneous text after the command */
             for(j = endOfInputIndex; input[j] != '\0'; j++)
@@ -202,8 +212,13 @@ void getInput(char* input, char* clearInput)
             }
             /* Add the null terminator to the clearInput array */
             clearInput[j+lastCommaIndex+1] = '\0';
-
-            break; /* Break the loop (return to the main function) */
+            if(isWaitingForComma == TRUE)
+            {
+                printf("Missing comma\n");
+                clearInput[0] = '\0';
+                return;
+            }
+            return; /* Break the loop (return to the main function) */
         }
         /* Skip spaces and tabs */
         else if(input[i] == ' ' || input[i] == '\t')
@@ -215,7 +230,14 @@ void getInput(char* input, char* clearInput)
         {
             if(isWaitingForComma == FALSE) /* If we weren't waiting for a comma we will print an error message and clear the clearInput array */
             {
-                printf("Illegal comma\n"); /* Print an error message */
+                if(input[i-1] == ',')
+                {
+                    printf("Multiple consecutive commas\n");
+                }
+                else
+                {
+                    printf("Illegal comma\n"); /* Print an error message */
+                }
                 clearInput[0] = '\0'; /* Clear the clearInput array */
                 return; /* Break the function */
             }
@@ -248,6 +270,8 @@ void getInput(char* input, char* clearInput)
                     j--;
                 }
                 isWaitingForComma = FALSE; /* Make sure we are not waiting for a comma - no need for a comma after the command */
+
+                clearInput[j+1] = ','; /* Put a comma at the end for all other commandsNames (for easier parsing) */
             }
             /* If we are not in the first argument */
             else
@@ -255,7 +279,7 @@ void getInput(char* input, char* clearInput)
                 startingIndex = i; /* Save the starting index of the current argument */
 
                 /* Go through the current argument and put it in the clearInput array - stop when we get to the end of the input or to a comma */
-                for(j = 0; input[j+startingIndex] != '\0' && input[j+startingIndex] != ','; j++)
+                for(j = 0; input[j+startingIndex] != '\0' && input[j+startingIndex] != ',' && input[j+startingIndex] != ' '; j++)
                 {
                     clearInput[j+lastCommaIndex] = input[j+startingIndex]; /* Insert the current argument to the clearInput array */
                 }
@@ -269,7 +293,7 @@ void getInput(char* input, char* clearInput)
                 isWaitingForComma = TRUE; /* Make sure we are waiting for a comma - we need a comma after the current argument */
             }
 
-            /* Put a comma at the end for all other commands (for easier parsing) */
+            /* Put a comma at the end for all other commandsNames (for easier parsing) */
             clearInput[j+lastCommaIndex+1] = ',';
             /* Move the index to the end of the current argument in the clearInput array (j+2 because of the comma and the null terminator) */
             lastCommaIndex += j+2;
@@ -307,13 +331,13 @@ void getLine(char *str)
 }
 
 /* A function that parses the command from the input */
-int parseCommand(char* input, char* command, char* commands[])
+int parseCommand(char* input, char* command, char* commandsNames[])
 {
     /* 
     Declarations:
     i - a counter for several loops
     commandEndIndex - the index of the end of the command
-    commandIndex - the index of the command in the commands array
+    commandIndex - the index of the command in the commandsNames array
     */
     int i = 0, commandEndIndex = 0, commandIndex = -1;
 
@@ -324,21 +348,22 @@ int parseCommand(char* input, char* command, char* commands[])
         {
             break;
         }
-        command[i] = input[i]; /* Insert the current character to the command array */
-    }    
+        /* Insert the current character to the command array - make sure the memory is different */
+        command[i] = input[i];
+    }
     command[i] = '\0'; /* Add a null terminator to the command string */
     commandEndIndex = i; /* Save the index of the end of the command */
 
-    for(i = 0; i < AMOUNT_OF_COMMANDS; i++) /* Find the command in the commands array */
+    for(i = 0; i < AMOUNT_OF_COMMANDS; i++) /* Find the command in the commandsNames array */
     {
-        if(strcmp(command, commands[i]) == 0) /* If the command is found in the commands array */
+        if(strcmp(command, commandsNames[i]) == 0) /* If the command is found in the commandsNames array */
         {
-            commandIndex = i; /* Save the index of the command in the commands array */
+            commandIndex = i; /* Save the index of the command in the commandsNames array */
             break; /* Break the loop */
         }
     }
 
-    /* If the command was not found in the commands array */
+    /* If the command was not found in the commandsNames array */
     if(commandIndex == -1)
     {
         printf("Undefined command name\n"); /* Print an error message */
@@ -358,7 +383,7 @@ int parseCommand(char* input, char* command, char* commands[])
                 return -1; /* Return -1 (an error) */
             }
         }
-        return commandIndex; /* Return the index of the command in the commands array */
+        return commandIndex; /* Return the index of the command in the commandsNames array */
     }
 
     /* remove the command from the cleaned input */
@@ -370,11 +395,11 @@ int parseCommand(char* input, char* command, char* commands[])
     /* Add a null terminator to the end of the cleaned input */
     input[i-commandEndIndex] = '\0';
 
-    /* Return the index of the command in the commands array */
+    /* Return the index of the command in the commandsNames array */
     return commandIndex;
 }
 
-void parseArguments(char* input, int command, float arguments[], MatrixMap matrixMap[])
+void parseArguments(char* input, int command, MatrixMap matrixMap[])
 {
     /*
     Declarations:
@@ -386,9 +411,8 @@ void parseArguments(char* input, int command, float arguments[], MatrixMap matri
     temp - a temporary string that holds the current argument
     stringArguments - an array of strings that holds the arguments
     */
-    int i = 0, j = 0, argumentsIndex = 0, tempIndex = 0, isDigit = TRUE;
+    int i = 0, argumentsIndex = 0, tempIndex = 0;
     char temp[MAX_ARG_LENGTH] = "", *stringArguments[MAX_AMOUNT_OF_ARGUMENTS] = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""};
-
     /* Go through the input and put the arguments in the stringArguments array */
     for(i = 0; i < strlen(input); i++, tempIndex++)
     {
@@ -408,18 +432,33 @@ void parseArguments(char* input, int command, float arguments[], MatrixMap matri
     switch (command)
     {
         case 0:
-            breakInputReadMat(stringArguments, arguments, matrixMap); /* Call the function that breaks the input for the read_mat command */
+            breakInputReadMat(stringArguments, matrixMap); /* Call the function that breaks the input for the read_mat command */
             break;
+        case 1:
+            breakInputPrintMat(stringArguments, matrixMap); /* Call the function that breaks the input for the print_mat command */
+            break;
+        case 2:
+        case 3:
+        case 4:
+            breakInputThreeMat(stringArguments, matrixMap, command); /* Call the function that breaks the input for the add_mat, sub_mat and mul_mat commandsNames */
+            break;
+        case 5:
+            breakInputMulScalar(stringArguments, matrixMap); /* Call the function that breaks the input for the mul_scalar command */
+            break;
+        case 6:
+            breakInputTransMat(stringArguments, matrixMap);
+            break; 
     }
 }
 
 /* A function that breaks the input for the read_mat command */
-void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap matrixMap[])
+void breakInputReadMat(char* stringArguments[], MatrixMap matrixMap[])
 {
     /*  i, j - counters for several loops */
     int i = 0, j = 0;
     float numList[AMOUNT_OF_NUMBERS] = {0}; /* A number list of 0's for initializing the matrices */
-    
+    float arguments[MAX_AMOUNT_OF_ARGUMENTS] = {-1}; /* An array of -1's for the arguments */
+
     for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
     {
         if(strcmp(stringArguments[0], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
@@ -433,6 +472,15 @@ void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap mat
     {
         printf("Undefined matrix name\n"); /* print an error message */
         return; /* break the function */
+    }
+
+    for(i = 0; i < 2; i++)
+    {
+        if(strcmp(stringArguments[i], "") == 0) /* if the current argument is an empty string */
+        {
+            printf("Missing argument\n");
+            return;
+        }
     }
 
     /* check if the rest of the arguments are valid (real numbers) and put them in the arguments array */
@@ -463,10 +511,208 @@ void breakInputReadMat(char* stringArguments[], float arguments[], MatrixMap mat
     }
 
     read_mat(matrixMap[(int)arguments[0]].matrix, numList); /* call the read_mat function */
-    printf("NumList: \n");
-    for(i = 0; i < AMOUNT_OF_NUMBERS; i++)
-    {
-        printf("%f\n", numList[i]);
-    }
-    print_mat(matrixMap[(int)arguments[0]].matrix); /* print the matrix */
 }  
+
+/* A function that breaks the input for the print_mat command */
+void breakInputPrintMat(char* stringArguments[], MatrixMap matrixMap[])
+{
+    int i = 0, j = 0;
+    /* A variable that holds the index of the matrix in the lookup table */
+    int matrixIndex = -1;
+
+    if(strcmp(stringArguments[0], "") == 0) /* if the current argument is an empty string */
+    {
+        printf("Missing argument\n");
+        return;
+    }
+
+    for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
+    {
+        if(strcmp(stringArguments[0], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matrixIndex = i; /* put the index of the matrix in the matrixIndex variable */
+            break; /* break the function */
+        }
+    }
+
+    for(j = 1; j < MAX_AMOUNT_OF_ARGUMENTS; j++) /* check if there is extraneous text after the end of the command */
+    {
+        if(stringArguments[j] != NULL && strcmp(stringArguments[j], "") != 0)
+        {
+            printf("Extraneous text after end of command\n");
+            return;
+        }
+    }
+
+    if(matrixIndex == -1) /* if the matrix name is not found in the lookup table */
+    {
+        printf("Undefined matrix name\n"); /* print an error message */
+        return; /* break the function */
+    }
+
+    print_mat(matrixMap[matrixIndex].matrix); /* call the print_mat function */
+}
+
+void breakInputThreeMat(char* stringArguments[], MatrixMap matrixMap[], int command)
+{
+    int i = 0, j = 0;
+    /* A variable that holds the index of the matrix in the lookup table */
+    int matrixIndexOne = -1, matrixIndexTwo = -1, matrixIndexThree = -1;
+
+    if(strcmp(stringArguments[0], "") == 0 || strcmp(stringArguments[1], "") == 0 || strcmp(stringArguments[2], "") == 0) /* if the current argument is an empty string */
+    {
+        printf("Missing argument\n");
+        return;
+    }
+
+    for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
+    {
+        if(strcmp(stringArguments[0], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matrixIndexOne = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+        if(strcmp(stringArguments[1], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matrixIndexTwo = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+        if(strcmp(stringArguments[2], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matrixIndexThree = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+    }
+
+    for(j = 3; j < MAX_AMOUNT_OF_ARGUMENTS; j++) /* check if there is extraneous text after the end of the command */
+    {
+        if(stringArguments[j] != NULL && strcmp(stringArguments[j], "") != 0)
+        {
+            printf("Extraneous text after end of command\n");
+            return;
+        }
+    }
+
+    if(matrixIndexOne == -1 || matrixIndexTwo == -1 || matrixIndexThree == -1) /* if the matrix name is not found in the lookup table */
+    {
+        printf("Undefined matrix name\n"); /* print an error message */
+        return; /* break the function */
+    }
+
+    switch(command)
+    {
+        case 2:
+            add_mat(matrixMap[matrixIndexOne].matrix, matrixMap[matrixIndexTwo].matrix, matrixMap[matrixIndexThree].matrix);
+            break;
+        case 3:
+            sub_mat(matrixMap[matrixIndexOne].matrix, matrixMap[matrixIndexTwo].matrix, matrixMap[matrixIndexThree].matrix);
+            break;
+        case 4:
+            mul_mat(matrixMap[matrixIndexOne].matrix, matrixMap[matrixIndexTwo].matrix, matrixMap[matrixIndexThree].matrix);
+            break;
+    }
+}
+
+void breakInputMulScalar(char* stringArguments[], MatrixMap matrixMap[])
+{
+    int i = 0;
+    int matOneIndex = -1, matTwoIndex = -1;
+
+    if(strcmp(stringArguments[0], "") == 0 || strcmp(stringArguments[1], "") == 0 || strcmp(stringArguments[2], "") == 0) /* if the current argument is an empty string */
+    {
+        printf("Missing argument\n");
+        return;
+    }
+
+    for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
+    {
+        if(strcmp(stringArguments[0], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matOneIndex = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+        if(strcmp(stringArguments[2], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matTwoIndex = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+    }
+
+    for(i = 3; i < MAX_AMOUNT_OF_ARGUMENTS; i++) /* check if there is extraneous text after the end of the command */
+    {
+        if(stringArguments[i] != NULL && strcmp(stringArguments[i], "") != 0)
+        {
+            printf("Extraneous text after end of command\n");
+            return;
+        }
+    }
+
+    if(matOneIndex == -1 || matTwoIndex == -1) /* if the matrix name is not found in the lookup table */
+    {
+        printf("Undefined matrix name\n"); /* print an error message */
+        return; /* break the function */
+    }
+
+    /* check if the scalar is a scalar */
+    for(i = 0; i < strlen(stringArguments[1]); i++)
+    {
+        if(isdigit(stringArguments[1][i]) || stringArguments[1][i] == '.' || stringArguments[1][i] == '-') /* if the current character is a digit, a dot or a minus */
+        {
+            continue; /* continue to the next character */
+        }
+        else /* if the current character is not a digit, a dot or a minus */
+        {
+            printf("Argument is not a scalar\n"); /* print an error message */
+            return; /* break the function */
+        }
+    }
+
+    mul_scalar(matrixMap[matOneIndex].matrix, atof(stringArguments[1]), matrixMap[matTwoIndex].matrix);
+}
+
+void breakInputTransMat(char* stringArguments[], MatrixMap matrixMap[])
+{
+    int i = 0;
+    int matOneIndex = -1, matTwoIndex = -1;
+    mat tempMat;
+    float numList[AMOUNT_OF_NUMBERS] = {0};
+
+    read_mat(&tempMat, numList);
+
+    if(strcmp(stringArguments[0], "") == 0 || strcmp(stringArguments[1], "") == 0) /* if the current argument is an empty string */
+    {
+        printf("Missing argument\n");
+        return;
+    }
+
+    for(i = 0; i < AMOUNT_OF_MATRICES; i++) /* find the matrix in the lookup table */
+    {
+        if(strcmp(stringArguments[0], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matOneIndex = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+        if(strcmp(stringArguments[1], matrixMap[i].matrixName) == 0) /* if the matrix name is found in the lookup table */
+        {
+            matTwoIndex = i; /* put the index of the matrix in the matrixIndex variable */
+        }
+    }
+
+    for(i = 2; i < MAX_AMOUNT_OF_ARGUMENTS; i++) /* check if there is extraneous text after the end of the command */
+    {
+        if(stringArguments[i] != NULL && strcmp(stringArguments[i], "") != 0)
+        {
+            printf("Extraneous text after end of command\n");
+            return;
+        }
+    }
+
+    if(matOneIndex == -1 || matTwoIndex == -1) /* if the matrix name is not found in the lookup table */
+    {
+        printf("Undefined matrix name\n"); /* print an error message */
+        return; /* break the function */
+    }
+
+    trans_mat(matrixMap[matOneIndex].matrix, matrixMap[matTwoIndex].matrix, &tempMat);
+}
+
+char *strdup(const char *src) {
+    char *dst = malloc(strlen (src) + 1);
+    if (dst == NULL) return NULL;
+    strcpy(dst, src);
+    return dst;
+}
